@@ -1,11 +1,5 @@
-[build]
-  command = "npm run build"
-  publish = ".next"
-
+# Netlify auto-detects Next.js and injects its own runtime, which handles the
+# build command, publish directory and SSR functions. Declaring those here
+# fights the runtime, so we only pin the Node version.
 [build.environment]
   NODE_VERSION = "22"
-
-# Serves the app through the Next.js runtime (SSR, route handlers, auth).
-# Without this Netlify publishes the raw .next folder and every route 404s.
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
