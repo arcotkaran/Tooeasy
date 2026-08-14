@@ -1,5 +1,9 @@
-# Git-connected deploys: Netlify detects Next.js and injects its own runtime,
-# which sets the build command, publish directory and SSR function. Declaring
-# any of those here fights the runtime, so we only pin the Node version.
+[build]
+  command = "npm run build"
+  publish = "out"
+
 [build.environment]
   NODE_VERSION = "22"
+
+[functions]
+  directory = "netlify/functions"

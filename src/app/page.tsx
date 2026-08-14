@@ -51,12 +51,6 @@ export default function Home() {
           <Logo />
           <nav className="flex items-center gap-1.5">
             <Link
-              href="/login"
-              className="rounded-full px-3.5 py-2 text-sm text-muted transition hover:text-fg"
-            >
-              Sign in
-            </Link>
-            <Link
               href="/book"
               className="rounded-full bg-acid px-4 py-2 text-sm font-semibold text-black transition hover:bg-acid-dim"
             >
@@ -438,12 +432,6 @@ export default function Home() {
             <nav className="flex flex-col gap-2.5 text-[14px] text-muted">
               <Link href="/book" className="transition hover:text-fg">
                 Book a pickup
-              </Link>
-              <Link href="/dashboard" className="transition hover:text-fg">
-                My bookings
-              </Link>
-              <Link href="/login" className="transition hover:text-fg">
-                Sign in
               </Link>
               <a
                 href="mailto:hello@tooeasy.com"

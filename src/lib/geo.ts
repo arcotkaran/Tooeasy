@@ -47,6 +47,16 @@ export const ZIP_CENTROIDS: Record<string, { lat: number; lng: number; name: str
   "60050": { lat: 42.34, lng: -88.27, name: "McHenry" },
 };
 
+/**
+ * The launch garage's coordinates and pickup radius. Lives here until there's
+ * a database to hold multiple partner shops.
+ */
+export const GARAGE = {
+  lat: 42.2306,
+  lng: -87.964,
+  radius_km: 10,
+};
+
 const EARTH_KM = 6371;
 
 export function haversineKm(

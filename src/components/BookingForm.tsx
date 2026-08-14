@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { SERVICES, PICKUP_WINDOWS, KEY_HANDOFF, isLikelySameDay } from "@/lib/services";
 
 type Form = {
@@ -19,6 +19,7 @@ type Form = {
   keyHandoff: string;
   contactName: string;
   contactPhone: string;
+  contactEmail: string;
 };
 
 const STEP_TITLES = ["Your car", "What's needed", "Where & when", "Confirm"];
@@ -27,17 +28,11 @@ const field =
   "w-full rounded-xl border border-line bg-surface px-4 py-3.5 text-fg placeholder:text-muted/60 outline-none transition focus:border-acid/60";
 const label = "mb-1.5 block text-[13px] font-medium text-muted";
 
-export function BookingForm({
-  initialZip,
-  defaultName,
-}: {
-  initialZip: string;
-  defaultName: string;
-}) {
-  const router = useRouter();
+export function BookingForm() {
   const [step, setStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [done, setDone] = useState<string | null>(null);
 
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
@@ -50,13 +45,23 @@ export function BookingForm({
     services: [],
     concern: "",
     pickupAddress: "",
-    pickupZip: initialZip,
+    pickupZip: "",
     pickupDate: today,
     pickupWindow: PICKUP_WINDOWS[0].id,
     keyHandoff: "in_person",
-    contactName: defaultName,
+    contactName: "",
     contactPhone: "",
+    contactEmail: "",
   });
+
+  // Static export has no server-side searchParams, so carry the ZIP over from
+  // the landing-page coverage check on the client.
+  useEffect(() => {
+    const zip = new URLSearchParams(window.location.search).get("zip");
+    if (zip && /^\d{5}$/.test(zip)) {
+      setF((prev) => ({ ...prev, pickupZip: zip }));
+    }
+  }, []);
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) =>
     setF((prev) => ({ ...prev, [k]: v }));
@@ -85,6 +90,7 @@ export function BookingForm({
       if (!f.contactName.trim()) return "Add a name for the driver to ask for.";
       if (f.contactPhone.replace(/\D/g, "").length < 10)
         return "Add a phone number we can text.";
+      if (!f.contactEmail.includes("@")) return "Add an email for your confirmation.";
     }
     return null;
   }
@@ -120,7 +126,8 @@ export function BookingForm({
         setSaving(false);
         return;
       }
-      router.push(`/booking/${data.id}?new=1`);
+      setDone(data.ref);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
       setError("Network problem. Try again.");
       setSaving(false);
@@ -128,6 +135,61 @@ export function BookingForm({
   }
 
   const sameDay = isLikelySameDay(f.services);
+
+  // ── Confirmation ─────────────────────────────────────────
+  if (done) {
+    return (
+      <div className="rise py-6">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-acid text-2xl text-black">
+          ✓
+        </span>
+        <h1 className="display mt-6 text-[2.3rem] leading-[1.05]">
+          You&rsquo;re booked.
+        </h1>
+        <p className="mt-4 text-[16px] leading-relaxed text-muted">
+          Your reference is{" "}
+          <span className="font-semibold text-acid">{done}</span>. We&rsquo;re
+          confirming the slot with the shop now and will text{" "}
+          {f.contactPhone} with your driver&rsquo;s name before pickup.
+        </p>
+
+        <div className="mt-8 rounded-2xl border border-line bg-surface/50 p-5">
+          <p className="eyebrow text-muted">What happens next</p>
+          <ol className="mt-4 space-y-3.5 text-[15px]">
+            {[
+              "We confirm your pickup window with the shop — usually within a couple of hours.",
+              "Your driver texts you before they set off, with their name and photo.",
+              "They photograph the car with you at handover, then take it in.",
+              "You get the estimate on your phone. Nothing is done until you approve it.",
+            ].map((x, i) => (
+              <li key={x} className="flex gap-3">
+                <span className="display shrink-0 text-acid">{i + 1}</span>
+                <span className="text-muted">{x}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        <p className="mt-6 text-[14px] leading-relaxed text-muted">
+          Need to change or cancel? Reply to the confirmation text, or email{" "}
+          <a
+            href="mailto:hello@tooeasy.com"
+            className="text-acid underline underline-offset-4"
+          >
+            hello@tooeasy.com
+          </a>{" "}
+          quoting {done}. Nothing has been charged.
+        </p>
+
+        <Link
+          href="/"
+          className="mt-8 inline-block rounded-full border border-line px-6 py-3.5 text-[15px] text-muted transition hover:text-fg"
+        >
+          ← Back to home
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="pb-32">
@@ -157,7 +219,7 @@ export function BookingForm({
             picking up?
           </h1>
           <p className="mt-3 text-[15px] text-muted">
-            The shop needs this to check parts before you arrive.
+            The shop needs this to check parts before your car arrives.
           </p>
 
           <div className="mt-8 space-y-4">
@@ -250,7 +312,7 @@ export function BookingForm({
                   className={`rounded-2xl border p-4 text-left transition ${
                     on
                       ? "border-acid bg-acid/[0.08]"
-                      : "border-line bg-surface/40 hover:border-line hover:bg-surface"
+                      : "border-line bg-surface/40 hover:bg-surface"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -440,8 +502,20 @@ export function BookingForm({
                 placeholder="(847) 555-0142"
                 className={field}
               />
+            </div>
+            <div>
+              <label className={label}>Email *</label>
+              <input
+                type="email"
+                inputMode="email"
+                value={f.contactEmail}
+                onChange={(e) => set("contactEmail", e.target.value)}
+                placeholder="you@email.com"
+                className={field}
+              />
               <p className="mt-1.5 text-[13px] text-muted">
-                Used for driver updates and the estimate link. Nothing else.
+                Used for your confirmation, driver updates and the estimate.
+                Nothing else.
               </p>
             </div>
           </div>
@@ -511,11 +585,7 @@ export function BookingForm({
             disabled={saving}
             className="flex-1 rounded-full bg-acid px-6 py-4 text-[15px] font-semibold text-black transition hover:bg-acid-dim disabled:opacity-60"
           >
-            {saving
-              ? "Booking…"
-              : step === 3
-                ? "Confirm pickup"
-                : "Continue"}
+            {saving ? "Booking…" : step === 3 ? "Confirm pickup" : "Continue"}
           </button>
         </div>
       </div>
