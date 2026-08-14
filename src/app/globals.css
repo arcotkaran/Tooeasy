@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #08090a;
+  --color-surface: #111417;
+  --color-surface-2: #191d21;
+  --color-line: #23282d;
+  --color-fg: #f4f7f8;
+  --color-muted: #98a2a9;
+  --color-acid: #c8ff47;
+  --color-acid-dim: #a5d92f;
+
+  --font-display: var(--font-space), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-xl2: 1.25rem;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-acid);
+  color: #000;
+}
+
+/* Display type: tight, confident, slightly condensed feel. */
+.display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 0.98;
+}
+
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* Soft radial glow used behind hero + section headers. */
+.glow::before {
+  content: "";
+  position: absolute;
+  inset: -20% -10% auto -10%;
+  height: 60%;
+  background: radial-gradient(60% 60% at 50% 0%, rgba(200, 255, 71, 0.13), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hairline {
+  border-color: color-mix(in srgb, var(--color-line) 100%, transparent);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Marquee strip in the trust bar. */
+@keyframes slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee {
+  animation: slide 26s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee {
+    animation: none;
+  }
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+}
+
+/* Kill the iOS zoom-on-focus without shrinking the visual size. */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
