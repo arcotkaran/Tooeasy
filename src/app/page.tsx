@@ -44,15 +44,15 @@ const TRUST = [
 
 export default function Home() {
   return (
-    <main className="min-h-dvh bg-ink">
+    <main className="min-h-dvh bg-page">
       {/* ── Header ─────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 border-b border-line/60 bg-ink/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-line/60 bg-page/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
           <Logo />
           <nav className="flex items-center gap-1.5">
             <Link
               href="/book"
-              className="rounded-full bg-acid px-4 py-2 text-sm font-semibold text-black transition hover:bg-acid-dim"
+              className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-dark"
             >
               Book pickup
             </Link>
@@ -65,8 +65,8 @@ export default function Home() {
         <div className="relative z-10 mx-auto max-w-6xl">
           <div className="lg:grid lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-14">
             <div>
-              <span className="eyebrow inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-acid">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-acid" />
+              <span className="eyebrow inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-brand">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand" />
                 Now serving Wentworthville &amp; nearby
               </span>
 
@@ -75,7 +75,7 @@ export default function Home() {
                 <br />
                 to the mechanic.
                 <br />
-                <span className="text-acid">You don&rsquo;t.</span>
+                <span className="text-brand">You don&rsquo;t.</span>
               </h1>
 
               <p className="mt-6 max-w-lg text-[17px] leading-relaxed text-muted sm:text-lg">
@@ -95,7 +95,7 @@ export default function Home() {
                   "Cancel any time",
                 ].map((x) => (
                   <li key={x} className="flex items-center gap-2">
-                    <span className="text-acid">✓</span>
+                    <span className="text-brand">✓</span>
                     {x}
                   </li>
                 ))}
@@ -113,24 +113,24 @@ export default function Home() {
                   priority
                   className="h-[420px] w-full object-cover object-center sm:h-[520px] lg:h-[600px]"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/10 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-page via-page/10 to-transparent" />
               </div>
 
               <div className="absolute bottom-5 left-4 right-4 rounded-2xl border border-line bg-surface/95 p-4 backdrop-blur-xl sm:left-6 sm:right-6">
                 <div className="flex items-center gap-3">
                   <span className="relative flex h-2.5 w-2.5 shrink-0">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-acid opacity-70" />
-                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-acid" />
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-70" />
+                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-brand" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-medium text-fg">
+                    <p className="truncate text-[13px] font-medium text-ink">
                       Dave is 4 minutes away
                     </p>
                     <p className="truncate text-[12px] text-muted">
                       Booking TE-4K9P2 · 2021 Mazda CX-5
                     </p>
                   </div>
-                  <span className="eyebrow shrink-0 rounded-full bg-acid/15 px-2.5 py-1 text-acid">
+                  <span className="eyebrow shrink-0 rounded-full bg-brand/15 px-2.5 py-1 text-brand">
                     Live
                   </span>
                 </div>
@@ -156,7 +156,7 @@ export default function Home() {
               ].map((x) => (
                 <span key={x} className="flex items-center gap-8">
                   {x}
-                  <span className="text-acid">✦</span>
+                  <span className="text-brand">✦</span>
                 </span>
               ))}
             </div>
@@ -167,7 +167,7 @@ export default function Home() {
       {/* ── How it works ───────────────────────────────────────── */}
       <section className="px-5 py-20 sm:py-28">
         <div className="mx-auto max-w-6xl">
-          <span className="eyebrow text-acid">How it works</span>
+          <span className="eyebrow text-brand">How it works</span>
           <h2 className="display mt-3 max-w-2xl text-[2.4rem] leading-[1.02] sm:text-5xl">
             Three taps, one driveway visit, no day off work.
           </h2>
@@ -175,7 +175,7 @@ export default function Home() {
           <div className="mt-14 grid gap-10 sm:grid-cols-3 sm:gap-8">
             {STEPS.map((s) => (
               <div key={s.n} className="relative">
-                <div className="display text-[3.5rem] leading-none text-line">
+                <div className="display text-[3.5rem] leading-none text-brand/25">
                   {s.n}
                 </div>
                 <h3 className="display mt-3 text-xl leading-snug">{s.t}</h3>
@@ -202,11 +202,11 @@ export default function Home() {
       <section className="border-y border-line bg-surface/30 px-5 py-20 sm:py-28">
         <div className="mx-auto max-w-6xl lg:grid lg:grid-cols-2 lg:items-center lg:gap-16">
           <div>
-            <span className="eyebrow text-acid">Where we fit</span>
+            <span className="eyebrow text-brand">Where we fit</span>
             <h2 className="display mt-3 text-[2.4rem] leading-[1.02] sm:text-5xl">
               We move your car.
               <br />
-              <span className="text-acid">Your mechanic does the rest.</span>
+              <span className="text-brand">Your mechanic does the rest.</span>
             </h2>
             <p className="mt-5 max-w-md text-[17px] leading-relaxed text-muted">
               Too Easy is the booking and transport bit — the part that normally
@@ -221,8 +221,8 @@ export default function Home() {
                 "The workshop contacts you about the work",
                 "We bring it back and hand it over the same way",
               ].map((x) => (
-                <li key={x} className="flex gap-3 text-[15px] text-fg">
-                  <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-acid" />
+                <li key={x} className="flex gap-3 text-[15px] text-ink">
+                  <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
                   {x}
                 </li>
               ))}
@@ -231,10 +231,10 @@ export default function Home() {
 
           {/* Status mock — what Too Easy actually gives you */}
           <div className="mt-12 lg:mt-0">
-            <div className="mx-auto max-w-sm rounded-[1.75rem] border border-line bg-ink p-5 shadow-2xl">
+            <div className="mx-auto max-w-sm rounded-[1.75rem] border border-line bg-page p-5 card-shadow">
               <div className="flex items-center justify-between">
                 <span className="eyebrow text-muted">Booking · TE-4K9P2</span>
-                <span className="eyebrow rounded-full bg-acid/15 px-2.5 py-1 text-acid">
+                <span className="eyebrow rounded-full bg-brand/15 px-2.5 py-1 text-brand">
                   At the workshop
                 </span>
               </div>
@@ -256,9 +256,9 @@ export default function Home() {
                       <span
                         className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border text-[9px] font-bold ${
                           done
-                            ? "border-acid bg-acid text-black"
+                            ? "border-brand bg-brand text-white"
                             : i === 3
-                              ? "border-acid text-acid"
+                              ? "border-brand text-brand"
                               : "border-line text-transparent"
                         }`}
                       >
@@ -266,7 +266,7 @@ export default function Home() {
                       </span>
                       {i < arr.length - 1 && (
                         <span
-                          className={`w-px flex-1 ${done ? "bg-acid/50" : "bg-line"}`}
+                          className={`w-px flex-1 ${done ? "bg-brand/50" : "bg-line"}`}
                           style={{ minHeight: "1.5rem" }}
                         />
                       )}
@@ -274,7 +274,7 @@ export default function Home() {
                     <div className="pb-4">
                       <p
                         className={`text-[14px] leading-tight ${
-                          i === 3 ? "font-semibold text-acid" : done ? "text-fg" : "text-muted"
+                          i === 3 ? "font-semibold text-brand" : done ? "text-ink" : "text-muted"
                         }`}
                       >
                         {label as string}
@@ -296,7 +296,7 @@ export default function Home() {
       {/* ── Services ───────────────────────────────────────────── */}
       <section className="px-5 py-20 sm:py-28">
         <div className="mx-auto max-w-6xl">
-          <span className="eyebrow text-acid">What you can book it in for</span>
+          <span className="eyebrow text-brand">What you can book it in for</span>
           <h2 className="display mt-3 max-w-2xl text-[2.4rem] leading-[1.02] sm:text-5xl">
             Everything a good local workshop does.
           </h2>
@@ -309,12 +309,12 @@ export default function Home() {
             {SERVICES.map((s) => (
               <div
                 key={s.id}
-                className="group rounded-2xl border border-line bg-surface/40 p-5 transition hover:border-acid/40 hover:bg-surface"
+                className="group rounded-2xl border border-line bg-surface/40 p-5 transition hover:border-brand/40 hover:bg-surface"
               >
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="display text-[17px] leading-snug">{s.label}</h3>
                   {s.sameDay && (
-                    <span className="eyebrow mt-0.5 shrink-0 rounded-full bg-acid/12 px-2 py-1 text-[9px] text-acid">
+                    <span className="eyebrow mt-0.5 shrink-0 rounded-full bg-brand/12 px-2 py-1 text-[9px] text-brand">
                       Same day
                     </span>
                   )}
@@ -341,7 +341,7 @@ export default function Home() {
             </div>
 
             <div className="mt-12 lg:mt-0">
-              <span className="eyebrow text-acid">
+              <span className="eyebrow text-brand">
                 &ldquo;But I need my car&rdquo;
               </span>
               <h2 className="display mt-3 text-[2.4rem] leading-[1.02] sm:text-5xl">
@@ -354,16 +354,16 @@ export default function Home() {
               </p>
 
               <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl border border-acid/30 bg-acid/[0.06] p-5">
-                  <p className="eyebrow text-acid">Gone by 9, back by 6</p>
-                  <p className="mt-2.5 text-[15px] leading-relaxed text-fg">
+                <div className="rounded-2xl border border-brand/30 bg-brand/[0.06] p-5">
+                  <p className="eyebrow text-brand">Gone by 9, back by 6</p>
+                  <p className="mt-2.5 text-[15px] leading-relaxed text-ink">
                     Logbook service, oil, tyres, brakes, battery and pink slips.
                     Routine work, same-day return.
                   </p>
                 </div>
-                <div className="rounded-2xl border border-line bg-ink p-5">
+                <div className="rounded-2xl border border-line bg-page p-5">
                   <p className="eyebrow text-muted">Needs a look first</p>
-                  <p className="mt-2.5 text-[15px] leading-relaxed text-fg">
+                  <p className="mt-2.5 text-[15px] leading-relaxed text-ink">
                     Engine lights, odd noises, air con and suspension. We pick it
                     up, the workshop diagnoses it, and they give you a real
                     timeline before anything goes ahead.
@@ -378,14 +378,14 @@ export default function Home() {
       {/* ── Trust ──────────────────────────────────────────────── */}
       <section className="px-5 py-20 sm:py-28">
         <div className="mx-auto max-w-6xl">
-          <span className="eyebrow text-acid">Handing over your keys</span>
+          <span className="eyebrow text-brand">Handing over your keys</span>
           <h2 className="display mt-3 max-w-2xl text-[2.4rem] leading-[1.02] sm:text-5xl">
             We know exactly how big a deal this is.
           </h2>
 
           <div className="mt-12 grid gap-px overflow-hidden rounded-[1.5rem] border border-line bg-line sm:grid-cols-2">
             {TRUST.map((x) => (
-              <div key={x.t} className="bg-ink p-7">
+              <div key={x.t} className="bg-page p-7">
                 <h3 className="display text-[19px] leading-snug">{x.t}</h3>
                 <p className="mt-2.5 text-[15px] leading-relaxed text-muted">
                   {x.d}
@@ -399,7 +399,7 @@ export default function Home() {
       {/* ── FAQ ────────────────────────────────────────────────── */}
       <section className="px-5 pb-20 sm:pb-28">
         <div className="mx-auto max-w-3xl">
-          <span className="eyebrow text-acid">Questions</span>
+          <span className="eyebrow text-brand">Questions</span>
           <h2 className="display mt-3 mb-10 text-[2.4rem] leading-[1.02] sm:text-5xl">
             The things people ask us.
           </h2>
@@ -413,7 +413,7 @@ export default function Home() {
           <h2 className="display text-[2.8rem] leading-[0.98] sm:text-6xl">
             Stop planning your week
             <br />
-            around a <span className="text-acid">service booking.</span>
+            around a <span className="text-brand">service booking.</span>
           </h2>
           <p className="mx-auto mt-6 max-w-md text-[17px] text-muted">
             Check your postcode. If we&rsquo;re on your street, you can book a
@@ -437,12 +437,12 @@ export default function Home() {
               </p>
             </div>
             <nav className="flex flex-col gap-2.5 text-[14px] text-muted">
-              <Link href="/book" className="transition hover:text-fg">
+              <Link href="/book" className="transition hover:text-ink">
                 Book a pickup
               </Link>
               <a
                 href="mailto:hello@tooeasy.com.au"
-                className="transition hover:text-fg"
+                className="transition hover:text-ink"
               >
                 hello@tooeasy.com.au
               </a>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Logo } from "@/components/Logo";
-import { BookingForm } from "@/components/BookingForm";
+import { SignInGate } from "@/components/SignInGate";
+import { AccountChip } from "@/components/AccountChip";
 
 export const metadata: Metadata = {
   title: "Book a pickup — Too Easy",
@@ -10,16 +11,16 @@ export const metadata: Metadata = {
 
 export default function BookPage() {
   return (
-    <div className="min-h-dvh bg-ink">
-      <header className="sticky top-0 z-50 border-b border-line/60 bg-ink/85 backdrop-blur-xl">
+    <div className="min-h-dvh bg-page">
+      <header className="sticky top-0 z-50 border-b border-line/70 bg-page/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-5">
           <Logo />
-          <span className="text-[13px] text-muted">Two-minute booking</span>
+          <AccountChip />
         </div>
       </header>
 
       <main className="mx-auto max-w-3xl px-5 py-8">
-        <BookingForm />
+        <SignInGate />
       </main>
     </div>
   );

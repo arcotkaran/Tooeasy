@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { SERVICES, PICKUP_WINDOWS, KEY_HANDOFF, isLikelySameDay } from "@/lib/services";
+import { submitBooking } from "@/lib/submitBooking";
 
 type Form = {
   vehicleYear: string;
@@ -25,10 +26,16 @@ type Form = {
 const STEP_TITLES = ["Your car", "What's needed", "Where & when", "Confirm"];
 
 const field =
-  "w-full rounded-xl border border-line bg-surface px-4 py-3.5 text-fg placeholder:text-muted/60 outline-none transition focus:border-acid/60";
+  "w-full rounded-xl border border-line bg-surface px-4 py-3.5 text-ink placeholder:text-muted/60 outline-none transition focus:border-brand/60";
 const label = "mb-1.5 block text-[13px] font-medium text-muted";
 
-export function BookingForm() {
+export function BookingForm({
+  defaultName = "",
+  defaultEmail = "",
+}: {
+  defaultName?: string;
+  defaultEmail?: string;
+}) {
   const [step, setStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -49,9 +56,9 @@ export function BookingForm() {
     pickupDate: today,
     pickupWindow: PICKUP_WINDOWS[0].id,
     keyHandoff: "in_person",
-    contactName: "",
+    contactName: defaultName,
     contactPhone: "",
-    contactEmail: "",
+    contactEmail: defaultEmail,
   });
 
   // Static export has no server-side searchParams, so carry the postcode over
@@ -116,18 +123,13 @@ export function BookingForm() {
     setError(null);
     setSaving(true);
     try {
-      const res = await fetch("/api/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(f),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Something went wrong.");
+      const result = await submitBooking(f);
+      if ("error" in result) {
+        setError(result.error);
         setSaving(false);
         return;
       }
-      setDone(data.ref);
+      setDone(result.ref);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
       setError("Network problem. Try again.");
@@ -141,7 +143,7 @@ export function BookingForm() {
   if (done) {
     return (
       <div className="rise py-6">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-acid text-2xl text-black">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand text-2xl text-white">
           ✓
         </span>
         <h1 className="display mt-6 text-[2.3rem] leading-[1.05]">
@@ -149,7 +151,7 @@ export function BookingForm() {
         </h1>
         <p className="mt-4 text-[16px] leading-relaxed text-muted">
           Your reference is{" "}
-          <span className="font-semibold text-acid">{done}</span>. We&rsquo;re
+          <span className="font-semibold text-brand">{done}</span>. We&rsquo;re
           confirming the slot with the workshop now and will text{" "}
           {f.contactPhone} with your driver&rsquo;s name before pickup.
         </p>
@@ -164,7 +166,7 @@ export function BookingForm() {
               "The workshop looks it over and contacts you directly about what it needs.",
             ].map((x, i) => (
               <li key={x} className="flex gap-3">
-                <span className="display shrink-0 text-acid">{i + 1}</span>
+                <span className="display shrink-0 text-brand">{i + 1}</span>
                 <span className="text-muted">{x}</span>
               </li>
             ))}
@@ -175,7 +177,7 @@ export function BookingForm() {
           Need to change or cancel? Reply to the confirmation text, or email{" "}
           <a
             href="mailto:hello@tooeasy.com.au"
-            className="text-acid underline underline-offset-4"
+            className="text-brand underline underline-offset-4"
           >
             hello@tooeasy.com.au
           </a>{" "}
@@ -184,7 +186,7 @@ export function BookingForm() {
 
         <Link
           href="/"
-          className="mt-8 inline-block rounded-full border border-line px-6 py-3.5 text-[15px] text-muted transition hover:text-fg"
+          className="mt-8 inline-block rounded-full border border-line px-6 py-3.5 text-[15px] text-muted transition hover:text-ink"
         >
           ← Back to home
         </Link>
@@ -201,7 +203,7 @@ export function BookingForm() {
             <div
               key={t}
               className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
-                i <= step ? "bg-acid" : "bg-line"
+                i <= step ? "bg-brand" : "bg-line"
               }`}
             />
           ))}
@@ -312,7 +314,7 @@ export function BookingForm() {
                   aria-pressed={on}
                   className={`rounded-2xl border p-4 text-left transition ${
                     on
-                      ? "border-acid bg-acid/[0.08]"
+                      ? "border-brand bg-brand/[0.08]"
                       : "border-line bg-surface/40 hover:bg-surface"
                   }`}
                 >
@@ -323,7 +325,7 @@ export function BookingForm() {
                     <span
                       className={`mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border text-[10px] font-bold ${
                         on
-                          ? "border-acid bg-acid text-black"
+                          ? "border-brand bg-brand text-white"
                           : "border-line text-transparent"
                       }`}
                     >
@@ -353,14 +355,14 @@ export function BookingForm() {
             <div
               className={`mt-5 rounded-2xl border p-4 ${
                 sameDay
-                  ? "border-acid/30 bg-acid/[0.06]"
+                  ? "border-brand/30 bg-brand/[0.06]"
                   : "border-line bg-surface/50"
               }`}
             >
-              <p className={`eyebrow ${sameDay ? "text-acid" : "text-muted"}`}>
+              <p className={`eyebrow ${sameDay ? "text-brand" : "text-muted"}`}>
                 {sameDay ? "Likely same-day" : "Needs a look first"}
               </p>
-              <p className="mt-2 text-[14px] leading-relaxed text-fg">
+              <p className="mt-2 text-[14px] leading-relaxed text-ink">
                 {sameDay
                   ? "This is routine work — expect the car back the same evening. We'll confirm when we book the workshop slot."
                   : "The workshop will diagnose it first and contact you directly with a timeline before anything goes ahead."}
@@ -427,7 +429,7 @@ export function BookingForm() {
                       onClick={() => set("pickupWindow", w.id)}
                       className={`rounded-xl border px-4 py-3 text-left transition ${
                         on
-                          ? "border-acid bg-acid/[0.08]"
+                          ? "border-brand bg-brand/[0.08]"
                           : "border-line bg-surface/40"
                       }`}
                     >
@@ -455,13 +457,13 @@ export function BookingForm() {
                       onClick={() => set("keyHandoff", k.id)}
                       className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3.5 text-left transition ${
                         on
-                          ? "border-acid bg-acid/[0.08]"
+                          ? "border-brand bg-brand/[0.08]"
                           : "border-line bg-surface/40"
                       }`}
                     >
                       <span
                         className={`h-4 w-4 shrink-0 rounded-full border-2 transition ${
-                          on ? "border-acid bg-acid" : "border-line"
+                          on ? "border-brand bg-brand" : "border-line"
                         }`}
                       />
                       <span className="text-[15px]">{k.label}</span>
@@ -522,7 +524,7 @@ export function BookingForm() {
           </div>
 
           <div className="mt-8 rounded-2xl border border-line bg-surface/50 p-5">
-            <p className="eyebrow text-acid">Your booking</p>
+            <p className="eyebrow text-brand">Your booking</p>
             <dl className="mt-4 space-y-3 text-[14px]">
               {[
                 [
@@ -552,7 +554,7 @@ export function BookingForm() {
               ].map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-6">
                   <dt className="shrink-0 text-muted">{k}</dt>
-                  <dd className="text-right text-fg">{v}</dd>
+                  <dd className="text-right text-ink">{v}</dd>
                 </div>
               ))}
             </dl>
@@ -565,18 +567,18 @@ export function BookingForm() {
       )}
 
       {error && (
-        <p className="mt-5 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-[14px] text-red-300">
+        <p className="mt-5 rounded-xl border border-red-600/30 bg-red-600/10 px-4 py-3 text-[14px] text-red-700">
           {error}
         </p>
       )}
 
       {/* Sticky actions */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-ink/95 px-5 py-4 backdrop-blur-xl">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-page/95 px-5 py-4 backdrop-blur-xl">
         <div className="mx-auto flex max-w-3xl gap-3">
           {step > 0 && (
             <button
               onClick={back}
-              className="rounded-full border border-line px-6 py-4 text-[15px] text-muted transition hover:text-fg"
+              className="rounded-full border border-line px-6 py-4 text-[15px] text-muted transition hover:text-ink"
             >
               Back
             </button>
@@ -584,7 +586,7 @@ export function BookingForm() {
           <button
             onClick={step === 3 ? submit : next}
             disabled={saving}
-            className="flex-1 rounded-full bg-acid px-6 py-4 text-[15px] font-semibold text-black transition hover:bg-acid-dim disabled:opacity-60"
+            className="flex-1 rounded-full bg-brand px-6 py-4 text-[15px] font-semibold text-white transition hover:bg-brand-dark disabled:opacity-60"
           >
             {saving ? "Booking…" : step === 3 ? "Confirm pickup" : "Continue"}
           </button>

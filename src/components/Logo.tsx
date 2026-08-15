@@ -10,12 +10,12 @@ export function Logo({ className = "" }: { className?: string }) {
       <span className="display text-[1.35rem] leading-none tracking-[-0.045em]">
         TOO
       </span>
-      <span className="display text-[1.35rem] leading-none tracking-[-0.045em] text-acid">
+      <span className="display text-[1.35rem] leading-none tracking-[-0.045em] text-brand">
         EASY
       </span>
       <span
         aria-hidden
-        className="mb-[2px] h-[6px] w-[6px] rounded-full bg-acid transition-transform duration-300 group-hover:scale-150"
+        className="mb-[2px] h-[6px] w-[6px] rounded-full bg-brand transition-transform duration-300 group-hover:scale-150"
       />
     </Link>
   );

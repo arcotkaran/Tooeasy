@@ -53,7 +53,7 @@ export function Faq() {
             >
               <span
                 className={`display text-[17px] leading-snug transition-colors ${
-                  isOpen ? "text-acid" : "text-fg"
+                  isOpen ? "text-brand" : "text-ink"
                 }`}
               >
                 {item.q}
@@ -61,7 +61,7 @@ export function Faq() {
               <span
                 aria-hidden
                 className={`mt-1 shrink-0 text-muted transition-transform duration-300 ${
-                  isOpen ? "rotate-45 text-acid" : ""
+                  isOpen ? "rotate-45 text-brand" : ""
                 }`}
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">

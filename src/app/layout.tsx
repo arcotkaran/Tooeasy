@@ -1,11 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk, Inter } from "next/font/google";
+import { Fraunces, Inter } from "next/font/google";
+import { AuthProvider } from "@/components/AuthProvider";
 import "./globals.css";
 
-const space = Space_Grotesk({
+// Warm, slightly characterful serif for headlines — the main thing keeping
+// this from reading as another black-and-neon delivery app.
+const fraunces = Fraunces({
   subsets: ["latin"],
-  variable: "--font-space",
+  variable: "--font-fraunces",
   display: "swap",
+  axes: ["SOFT", "WONK", "opsz"],
 });
 
 const inter = Inter({
@@ -27,7 +31,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#08090a",
+  themeColor: "#fbf6ee",
   width: "device-width",
   initialScale: 1,
 };
@@ -36,8 +40,10 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${space.variable} ${inter.variable}`}>
-      <body>{children}</body>
+    <html lang="en" className={`${fraunces.variable} ${inter.variable}`}>
+      <body>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

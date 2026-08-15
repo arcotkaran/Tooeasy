@@ -64,13 +64,13 @@ export function PostcodeCheck({ compact = false }: { compact?: boolean }) {
 
   if (state === "done" && result?.covered) {
     return (
-      <div className="rounded-xl2 border border-acid/35 bg-acid/[0.07] p-5 rise">
+      <div className="rounded-xl2 border border-brand/35 bg-brand/[0.07] p-5 rise">
         <div className="flex items-start gap-3">
-          <span className="mt-[3px] flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-acid text-[11px] font-bold text-black">
+          <span className="mt-[3px] flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand text-[11px] font-bold text-white">
             ✓
           </span>
           <div>
-            <p className="display text-lg text-fg">
+            <p className="display text-lg text-ink">
               We pick up in {result.suburb}.
             </p>
             <p className="mt-1 text-sm text-muted">
@@ -81,7 +81,7 @@ export function PostcodeCheck({ compact = false }: { compact?: boolean }) {
         </div>
         <button
           onClick={() => router.push(`/book?postcode=${result.postcode}`)}
-          className="mt-4 w-full rounded-full bg-acid px-6 py-4 text-center text-[15px] font-semibold text-black transition hover:bg-acid-dim active:scale-[0.99]"
+          className="mt-4 w-full rounded-full bg-brand px-6 py-4 text-center text-[15px] font-semibold text-white transition hover:bg-brand-dark active:scale-[0.99]"
         >
           Book my pickup →
         </button>
@@ -90,7 +90,7 @@ export function PostcodeCheck({ compact = false }: { compact?: boolean }) {
             setState("idle");
             setResult(null);
           }}
-          className="mt-2 w-full text-center text-xs text-muted underline underline-offset-4 hover:text-fg"
+          className="mt-2 w-full text-center text-xs text-muted underline underline-offset-4 hover:text-ink"
         >
           Check a different postcode
         </button>
@@ -127,19 +127,19 @@ export function PostcodeCheck({ compact = false }: { compact?: boolean }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@email.com"
-                className="w-full rounded-xl border border-line bg-ink px-4 py-3.5 text-fg placeholder:text-muted/60 outline-none focus:border-acid/60"
+                className="w-full rounded-xl border border-line bg-page px-4 py-3.5 text-ink placeholder:text-muted/60 outline-none focus:border-brand/60"
               />
               <input
                 type="text"
                 value={vehicle}
                 onChange={(e) => setVehicle(e.target.value)}
                 placeholder="Your car (e.g. 2019 Mazda CX-5)"
-                className="w-full rounded-xl border border-line bg-ink px-4 py-3.5 text-fg placeholder:text-muted/60 outline-none focus:border-acid/60"
+                className="w-full rounded-xl border border-line bg-page px-4 py-3.5 text-ink placeholder:text-muted/60 outline-none focus:border-brand/60"
               />
               <button
                 type="submit"
                 disabled={joining}
-                className="w-full rounded-full bg-acid px-6 py-3.5 font-semibold text-black transition hover:bg-acid-dim disabled:opacity-60"
+                className="w-full rounded-full bg-brand px-6 py-3.5 font-semibold text-white transition hover:bg-brand-dark disabled:opacity-60"
               >
                 {joining ? "Adding you…" : "Tell me when you're here"}
               </button>
@@ -152,7 +152,7 @@ export function PostcodeCheck({ compact = false }: { compact?: boolean }) {
             setResult(null);
             setJoined(false);
           }}
-          className="mt-3 w-full text-center text-xs text-muted underline underline-offset-4 hover:text-fg"
+          className="mt-3 w-full text-center text-xs text-muted underline underline-offset-4 hover:text-ink"
         >
           Check a different postcode
         </button>
@@ -162,7 +162,7 @@ export function PostcodeCheck({ compact = false }: { compact?: boolean }) {
 
   return (
     <form onSubmit={check} className={compact ? "" : "rise"}>
-      <div className="flex gap-2 rounded-full border border-line bg-surface p-1.5 focus-within:border-acid/50">
+      <div className="flex gap-2 rounded-full border border-line bg-surface p-1.5 focus-within:border-brand/50">
         <input
           inputMode="numeric"
           pattern="[0-9]*"
@@ -171,17 +171,17 @@ export function PostcodeCheck({ compact = false }: { compact?: boolean }) {
           onChange={(e) => setPostcode(e.target.value.replace(/\D/g, ""))}
           placeholder="Your postcode"
           aria-label="Postcode"
-          className="min-w-0 flex-1 bg-transparent px-4 py-3 text-fg placeholder:text-muted/70 outline-none"
+          className="min-w-0 flex-1 bg-transparent px-4 py-3 text-ink placeholder:text-muted/70 outline-none"
         />
         <button
           type="submit"
           disabled={state === "checking"}
-          className="shrink-0 rounded-full bg-acid px-5 py-3 text-[15px] font-semibold text-black transition hover:bg-acid-dim disabled:opacity-60"
+          className="shrink-0 rounded-full bg-brand px-5 py-3 text-[15px] font-semibold text-white transition hover:bg-brand-dark disabled:opacity-60"
         >
           {state === "checking" ? "…" : "Check"}
         </button>
       </div>
-      {error && <p className="mt-2 px-2 text-sm text-red-400">{error}</p>}
+      {error && <p className="mt-2 px-2 text-sm text-red-700">{error}</p>}
       {!compact && !error && (
         <p className="mt-2.5 px-2 text-[13px] text-muted">
           Two-minute booking · Cancel any time
