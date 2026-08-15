@@ -1,114 +1,126 @@
 # Too Easy
 
-Car service pickup and return. A customer books, a driver collects the car from
-their driveway, a partner shop does the work, and the driver brings it back.
+Car service pickup and return around **Parramatta, NSW**. A customer requests a
+pickup, an admin books the slot with the workshop, a driver collects the car,
+the mechanic rings the customer directly about the work, and the driver brings
+it back.
 
-**Live:** https://tooeasy-pickup.netlify.app
-
----
-
-## Two versions of this app
-
-| Branch     | What it is                                                                 |
-| ---------- | -------------------------------------------------------------------------- |
-| `master`   | **Deployed.** Static export + Netlify Functions. No login. Marketing site, booking capture, waitlist, interim ops view. |
-| `ssr-full` | Full SSR app: Google sign-in, Postgres, customer tracking, driver / shop / ops consoles, estimate approval. Not deployed yet. |
-
-`master` exists because Netlify's zip/API deploy path can't run the Next.js SSR
-runtime on this account — it isn't injected automatically, and declaring
-`@netlify/plugin-nextjs` fails the build with exit code 2. That reproduces with
-a four-file hello-world Next app, so it isn't specific to this project.
-
-To ship `ssr-full`, push it to GitHub and connect the repo in Netlify
-(**Add new site → Import an existing project**). Git-connected deploys get the
-Next runtime automatically. Everything in it is written and builds clean; it
-needs Google OAuth credentials and a git-connected deploy, nothing more.
+Too Easy is the booking and transport channel. It does not quote prices and
+does not sit between the customer and the mechanic.
 
 ---
 
-## Running locally
+## Running it
 
 ```bash
 npm install
 npm run dev
 ```
 
-The API runs as Netlify Functions, so `npm run dev` alone won't serve
-`/api/*`. For the full stack locally use `netlify dev` (requires
-`netlify login`).
+Open http://localhost:3000. That's all — the database creates and seeds itself
+on first request.
+
+### The offline database
+
+SQLite through Node's built-in `node:sqlite` driver. No Docker, no service to
+start, no native modules. The file lives at `.data/tooeasy.db` (gitignored).
+
+Schema and table names deliberately mirror `supabase/schema.sql`, so moving to
+Supabase later is a connection change and a data copy — not a rewrite.
+
+To start completely fresh:
+
+```bash
+rm -rf .data
+```
 
 ---
 
-## Architecture (master)
+## Test accounts
+
+Seeded automatically on an empty database. **These are development credentials
+on a local file database — change them before anything goes near the internet.**
+
+| Role     | Email                   | Password            | Lands on     |
+| -------- | ----------------------- | ------------------- | ------------ |
+| Admin    | `admin@tooeasy.test`    | `TooEasyAdmin!2026` | `/admin`     |
+| Customer | `customer@tooeasy.test` | `TooEasyUser!2026`  | `/dashboard` |
+| Driver   | `driver@tooeasy.test`   | `TooEasyDriver!2026`| `/driver`    |
+| Mechanic | `mechanic@tooeasy.test` | `TooEasyMech!2026`  | `/garage`    |
+
+Passwords are scrypt-hashed with a per-user salt. Sessions are httpOnly
+cookies backed by a `sessions` table, valid 30 days.
+
+---
+
+## Roles and how accounts are made
+
+| Role     | How the account is created                        |
+| -------- | ------------------------------------------------- |
+| Customer | Self sign-up at `/signup`                          |
+| Driver   | Created by an admin in `/admin` — invite only      |
+| Mechanic | Created by an admin in `/admin`                    |
+| Admin    | Created by another admin, or seeded                |
+
+`/signup` can only ever create a customer. Staff roles are not selectable
+there — an admin creates them and hands over the credentials directly.
+
+Each console is role-guarded server-side: a customer hitting `/admin` is
+redirected, and a driver can only change a job assigned to them.
+
+---
+
+## The pages
+
+```
+/                 marketing site, suburb search, coverage map
+/book             3-step booking (open to guests; prefilled when signed in)
+/signup           customer creates their own profile
+/login            everyone signs in here, then lands on their console
+/dashboard        customer: bookings + live tracker + history + cancel
+/driver           driver: assigned jobs, call/navigate, status buttons
+/garage           mechanic: workshop queue, "ring the customer" prompt
+/admin            ops: bookings, assign drivers, manage people, waitlist
+```
+
+## Booking lifecycle
+
+`requested → confirmed → driver_assigned → en_route_pickup → picked_up →
+at_workshop → in_service → ready → en_route_return → delivered`, plus
+`cancelled`.
+
+Every transition is checked against the actor's role in `src/lib/status.ts` and
+appended to `booking_events`, which is what the customer's history shows.
+
+---
+
+## Layout
 
 ```
 src/
+  server/          database, auth, bookings — server-only
+    db.ts          SQLite connection, schema, seed accounts
+    auth.ts        sessions, users, role helpers
+    password.ts    scrypt hash/verify
+    bookings.ts    booking + event queries
   app/
-    page.tsx                 marketing site (static)
-    book/page.tsx            4-step booking flow (static shell, client form)
-  components/                Logo, ZipCheck, Faq, BookingForm
+    actions.ts     all server actions (sign in/up, staff, status, booking)
   lib/
-    geo.ts                   ZIP centroids, haversine, GARAGE constant
-    services.ts              service catalogue, pickup windows, key handoff
-netlify/functions/
-  coverage.mts               POST /api/coverage   — is this ZIP in range?
-  bookings.mts               POST /api/bookings   — create a booking
-  waitlist.mts               POST /api/waitlist   — out-of-area capture
-  ops.mts                    GET  /api/ops        — interim ops view
+    geo.ts         suburb list, coverage
+    services.ts    service catalogue, pickup windows
+    status.ts      lifecycle + who may set what
+supabase/
+  schema.sql       the Postgres target for when you move off SQLite
 ```
-
-Bookings and waitlist entries are stored in **Netlify Blobs** — no database to
-provision. Booking keys are `YYYY-MM-DD/TE-XXXXX` so they sort chronologically;
-waitlist keys are ZIP-prefixed so they group by area.
-
-### Service area
-
-`GARAGE` in [`src/lib/geo.ts`](src/lib/geo.ts) holds the launch shop's
-coordinates and a `radius_km` of 10. Coverage is a haversine check against ZIP
-centroids. In range today:
-
-`60061` Vernon Hills · `60048` Libertyville · `60060` Mundelein ·
-`60069` Lincolnshire · `60089` Buffalo Grove · `60047` Hawthorn Woods ·
-`60045` Lake Forest
-
-Everything else is offered the waitlist, which is how you learn where to open
-next. Widening the radius is a one-line change in `geo.ts`.
-
----
-
-## Seeing your bookings
-
-`/api/ops` is gated on a shared secret and returns 404 without it. **You need to
-set this once** — the Netlify MCP could not write environment variables
-reliably, so it has to be done in the UI:
-
-1. Netlify → **tooeasy-pickup → Site configuration → Environment variables**
-2. Add `OPS_KEY` with any long random value
-3. **Deploys → Trigger deploy** so the function picks it up
-
-Then visit `https://tooeasy-pickup.netlify.app/api/ops?key=YOUR_KEY`
-(add `&format=json` for raw data).
-
-It shows every booking with name, phone, email, address, requested work and the
-customer's own description, plus the waitlist grouped by ZIP.
-
-> There are two test bookings and one test waitlist entry in the store from
-> deployment checks — "Test Booking" and "Live Check". Ignore or delete them.
 
 ---
 
 ## Not built yet
 
-- **Google sign-in** — written on `ssr-full`, needs OAuth credentials.
-- **Notifications** — nothing emails or texts you when a booking lands. Until
-  that exists, check `/api/ops`. This is the first thing to add.
-- **Driver / shop consoles and estimate approval** — on `ssr-full`.
-- **Photo condition report at handover** — schema exists on `ssr-full`, capture
-  UI does not. Build before the first real pickup.
-
-## Netlify sites
-
-- `tooeasy-pickup` — live, working.
-- `tooeasy-pickup-legacy` — the original site. Its build settings are stuck in a
-  state that fails every deploy; kept only so the name isn't recycled. Safe to
-  delete.
+- **Notifications.** Nothing texts or emails anyone. Every "we'll text you" on
+  the site is currently a promise the system can't keep. This is the first gap
+  to close.
+- **Photo condition report** at handover.
+- **Deployment.** The app needs a Node server now, so the previous static
+  Netlify setup no longer applies.
+- **Google sign-in.** Deliberately skipped; email + password instead.

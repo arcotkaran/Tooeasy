@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { SERVICES, PICKUP_WINDOWS, KEY_HANDOFF, isLikelySameDay } from "@/lib/services";
-import { submitBooking } from "@/lib/submitBooking";
+import { createBookingAction } from "@/app/actions";
 import { DateTimePicker } from "@/components/DateTimePicker";
 import { SuburbPicker } from "@/components/SuburbPicker";
 import { findSuburb, isCovered, type Suburb } from "@/lib/geo";
@@ -43,9 +43,11 @@ const label = "mb-1.5 block text-[13px] font-medium text-muted";
 export function BookingForm({
   defaultName = "",
   defaultEmail = "",
+  defaultPhone = "",
 }: {
   defaultName?: string;
   defaultEmail?: string;
+  defaultPhone?: string;
 }) {
   const [step, setStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -54,6 +56,8 @@ export function BookingForm({
   const [suburb, setSuburb] = useState<Suburb | null>(null);
 
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  // One id per page load, so a double-tap can't create two jobs.
+  const requestId = useMemo(() => crypto.randomUUID(), []);
 
   const [f, setF] = useState<Form>({
     vehicle: "",
@@ -66,7 +70,7 @@ export function BookingForm({
     pickupWindow: PICKUP_WINDOWS[0].id,
     keyHandoff: "in_person",
     contactName: defaultName,
-    contactPhone: "",
+    contactPhone: defaultPhone,
     contactEmail: defaultEmail,
   });
 
@@ -145,9 +149,24 @@ export function BookingForm({
     setError(null);
     setSaving(true);
     try {
-      const result = await submitBooking(f);
-      if ("error" in result) {
-        setError(result.error);
+      const fd = new FormData();
+      fd.set("vehicle", f.vehicle);
+      fd.set("services", f.services.join(","));
+      fd.set("concern", f.concern);
+      fd.set("pickupAddress", f.pickupAddress);
+      fd.set("suburb", f.suburb);
+      fd.set("postcode", f.postcode);
+      fd.set("pickupDate", f.pickupDate);
+      fd.set("pickupWindow", f.pickupWindow);
+      fd.set("keyHandoff", f.keyHandoff);
+      fd.set("contactName", f.contactName);
+      fd.set("contactPhone", f.contactPhone);
+      fd.set("contactEmail", f.contactEmail);
+      fd.set("requestId", requestId);
+
+      const result = await createBookingAction({}, fd);
+      if (result.error || !result.ref) {
+        setError(result.error ?? "Something went wrong.");
         setSaving(false);
         return;
       }
