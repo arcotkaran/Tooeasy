@@ -5,5 +5,7 @@
 [build.environment]
   NODE_VERSION = "22"
 
+# Functions are pre-bundled by scripts/build-functions.mjs into self-contained
+# ESM files, so Netlify's bundler never has to resolve imports into src/.
 [functions]
-  directory = "netlify/functions"
+  directory = "netlify/dist-functions"
