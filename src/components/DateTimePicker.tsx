@@ -129,7 +129,7 @@ export function DateTimePicker({
 
       {selected && (
         <p className="mt-4 rounded-xl border border-brand/25 bg-brand/[0.06] px-4 py-3 text-[14px] leading-relaxed">
-          We&rsquo;ll collect your car on{" "}
+          You&rsquo;re requesting{" "}
           <strong className="font-semibold">
             {selected.toLocaleDateString("en-AU", {
               weekday: "long",
@@ -137,14 +137,15 @@ export function DateTimePicker({
               month: "long",
             })}
           </strong>
-          , {windowLabel?.detail.toLowerCase()}. We confirm the slot with the
-          workshop and text you if anything needs to shift.
+          , {windowLabel?.detail.toLowerCase()}. We&rsquo;ll book the slot with
+          the workshop and text you to confirm — usually within a couple of
+          hours.
         </p>
       )}
 
       <p className="mt-3 text-[13px] text-muted">
-        Pickups run Monday to Saturday. Need today or a Sunday? Email us and
-        we&rsquo;ll see what we can do.
+        Collections run 9am to 5pm, Monday to Saturday. Morning slots have the
+        best chance of the car being back with you the same day.
       </p>
     </div>
   );

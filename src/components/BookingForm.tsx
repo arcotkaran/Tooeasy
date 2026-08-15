@@ -101,7 +101,7 @@ export function BookingForm({
     if (s === 1 && f.services.length === 0)
       return "Pick at least one thing to look at.";
     if (s === 2) {
-      if (!f.pickupAddress.trim()) return "We need the pickup address.";
+      if (!f.pickupAddress.trim()) return "We need the pickup address — home or office is fine.";
       if (!/^\d{4}$/.test(f.pickupPostcode.trim()))
         return "Enter a 4-digit postcode.";
       if (!f.pickupDate) return "Pick a pickup date.";
@@ -159,13 +159,14 @@ export function BookingForm({
           ✓
         </span>
         <h1 className="display mt-6 text-[2.3rem] leading-[1.05]">
-          You&rsquo;re booked.
+          Request received.
         </h1>
         <p className="mt-4 text-[16px] leading-relaxed text-muted">
           Your reference is{" "}
           <span className="font-semibold text-brand">{done}</span>. We&rsquo;re
-          confirming the slot with the workshop now and will text{" "}
-          {f.contactPhone} with your driver&rsquo;s name before pickup.
+          booking the slot with the workshop now — you&rsquo;ll get a text on{" "}
+          {f.contactPhone} confirming your pickup, usually within a couple of
+          hours. Nothing is locked in until then.
         </p>
 
         <div className="mt-8 rounded-2xl border border-line bg-surface/50 p-5">
@@ -396,7 +397,7 @@ export function BookingForm({
 
           <div className="mt-8 space-y-4">
             <div>
-              <label className={label}>Pickup address *</label>
+              <label className={label}>Pickup address (home or office) *</label>
               <input
                 value={f.pickupAddress}
                 onChange={(e) => set("pickupAddress", e.target.value)}

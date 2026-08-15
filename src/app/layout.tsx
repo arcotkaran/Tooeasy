@@ -21,7 +21,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Too Easy — car service pickup & return, Wentworthville",
   description:
-    "We collect your car from your driveway, take it to a trusted local workshop, and bring it back when it's done. You never leave the house.",
+    "We collect your car from home or the office, take it to a trusted local workshop, and have it back before the day is out.",
   openGraph: {
     title: "Too Easy — car service without the trip",
     description:

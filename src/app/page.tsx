@@ -8,12 +8,12 @@ import { SERVICES } from "@/lib/services";
 const STEPS = [
   {
     n: "01",
-    t: "Tell us the car and what it needs",
-    d: "Two minutes on your phone. Pick a pickup window that suits you — before work, or after you get home.",
+    t: "Ask for a day and a time that suits",
+    d: "Two minutes on your phone. We book the slot with the workshop and text you back to confirm it, usually within a couple of hours.",
   },
   {
     n: "02",
-    t: "A driver collects it from your driveway",
+    t: "A driver collects it — home or the office",
     d: "You get their name by text before they arrive. They walk the car, photograph every panel with you, and drive it to the workshop.",
   },
   {
@@ -38,7 +38,7 @@ const TRUST = [
   },
   {
     t: "You always know where it is",
-    d: "A text at every step, from the driver setting off to your car back in the driveway. No wondering, no chasing.",
+    d: "A text at every step, from the moment your slot is confirmed to your car back in your hands. No wondering, no chasing.",
   },
 ];
 
@@ -79,9 +79,9 @@ export default function Home() {
               </h1>
 
               <p className="mt-6 max-w-lg text-[17px] leading-relaxed text-muted sm:text-lg">
-                We collect your car from your driveway, take it to a trusted
-                local workshop, and bring it back when it&rsquo;s done. You
-                never leave the house.
+                We collect your car from home or the office, take it to a
+                trusted local workshop, and have it back to you before the day
+                is out. You don&rsquo;t go anywhere.
               </p>
 
               <div className="mt-8 max-w-md">
@@ -102,7 +102,7 @@ export default function Home() {
               </ul>
             </div>
 
-            {/* Hero photo with a live-tracking chip floating over it */}
+            {/* Hero photo with the coverage note sitting over it */}
             <div className="relative mt-12 lg:mt-0">
               <div className="relative overflow-hidden rounded-[1.75rem] border border-line">
                 <Image
@@ -159,7 +159,7 @@ export default function Home() {
         <div className="mx-auto max-w-6xl">
           <span className="eyebrow text-brand">How it works</span>
           <h2 className="display mt-3 max-w-2xl text-[2.4rem] leading-[1.02] sm:text-5xl">
-            Three taps, one driveway visit, no day off work.
+            Gone after nine, back before five. No day off work.
           </h2>
 
           <div className="mt-14 grid gap-10 sm:grid-cols-3 sm:gap-8">
@@ -307,7 +307,7 @@ export default function Home() {
 
               <div className="mt-8 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl border border-brand/30 bg-brand/[0.06] p-5">
-                  <p className="eyebrow text-brand">Gone by 9, back by 6</p>
+                  <p className="eyebrow text-brand">Gone after nine, back before five</p>
                   <p className="mt-2.5 text-[15px] leading-relaxed text-ink">
                     Logbook service, oil, tyres, brakes, battery and pink slips.
                     Routine work, same-day return.

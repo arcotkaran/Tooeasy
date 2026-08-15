@@ -5,7 +5,7 @@ import { useState } from "react";
 const ITEMS = [
   {
     q: "Who actually drives my car?",
-    a: "A licence-checked, insured Too Easy driver — the same small local team every time, not a rotating gig pool. We check driving records, not just police checks. Your car is covered while it's in our hands, and we photograph it before we pull out of your driveway.",
+    a: "A licence-checked, insured Too Easy driver — the same small local team every time, not a rotating gig pool. We check driving records, not just police checks. Your car is covered while it's in our hands, and we photograph it with you before we drive away.",
   },
   {
     q: "Who decides what work gets done?",

@@ -80,11 +80,16 @@ export function isLikelySameDay(ids: string[]): boolean {
   return ids.length > 0 && ids.every((id) => SERVICE_BY_ID.get(id)?.sameDay);
 }
 
+/**
+ * We run 9am–5pm: collections start after 9, and we aim to have cars back
+ * before 5. Morning slots give the workshop the best chance of a same-day
+ * return, so they're listed first.
+ */
 export const PICKUP_WINDOWS = [
-  { id: "am", label: "Morning", detail: "7:00 – 10:00am" },
-  { id: "midday", label: "Midday", detail: "10:00am – 1:00pm" },
-  { id: "pm", label: "Afternoon", detail: "1:00 – 4:00pm" },
-  { id: "eve", label: "Evening", detail: "4:00 – 7:00pm" },
+  { id: "am", label: "Morning", detail: "9:00 – 11:00am" },
+  { id: "midday", label: "Midday", detail: "11:00am – 1:00pm" },
+  { id: "pm", label: "Early afternoon", detail: "1:00 – 3:00pm" },
+  { id: "late", label: "Late afternoon", detail: "3:00 – 5:00pm" },
 ];
 
 export const KEY_HANDOFF = [
