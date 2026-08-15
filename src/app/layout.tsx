@@ -19,13 +19,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Too Easy — car service pickup & return, Wentworthville",
+  title: "Too Easy — car service pickup & return, Parramatta",
   description:
     "We collect your car from home or the office, take it to a trusted local workshop, and have it back before the day is out.",
   openGraph: {
     title: "Too Easy — car service without the trip",
     description:
-      "Car pickup and return around Wentworthville. Insured, licence-checked drivers and a trusted local workshop.",
+      "Car pickup and return around Parramatta. Insured, licence-checked drivers and a trusted local workshop.",
     type: "website",
   },
 };

@@ -10,15 +10,12 @@ import { supabase, supabaseConfigured } from "@/lib/supabase";
 export const SERVICE_CATEGORY = "mechanic" as const;
 
 export type BookingInput = {
-  vehicleYear: string;
-  vehicleMake: string;
-  vehicleModel: string;
-  vehiclePlate: string;
-  vehicleOdometer: string;
+  vehicle: string;
   services: string[];
   concern: string;
   pickupAddress: string;
-  pickupPostcode: string;
+  suburb: string;
+  postcode: string;
   pickupDate: string;
   pickupWindow: string;
   keyHandoff: string;
@@ -37,13 +34,23 @@ function newRef(): string {
   return `TE-${out}`;
 }
 
+/**
+ * One id per page load. Sent with the booking so a double-tap or a retry on a
+ * flaky connection can't create two jobs for the same customer.
+ */
+let requestId: string | null = null;
+function getRequestId(): string {
+  if (!requestId) {
+    requestId =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  }
+  return requestId;
+}
+
 type Result = { ref: string } | { error: string };
 
-/**
- * Writes to Supabase when it's configured, otherwise falls back to the
- * Netlify Function that stores in Blobs. The fallback keeps the site taking
- * bookings before the Supabase project exists.
- */
 export async function submitBooking(input: BookingInput): Promise<Result> {
   if (supabaseConfigured) {
     const client = supabase();
@@ -59,18 +66,16 @@ export async function submitBooking(input: BookingInput): Promise<Result> {
       user_id: user.id,
       category: SERVICE_CATEGORY,
       status: "requested",
+      request_id: getRequestId(),
       contact_name: input.contactName.trim(),
       contact_phone: input.contactPhone.trim(),
-      contact_email: input.contactEmail.trim().toLowerCase(),
-      vehicle_year: input.vehicleYear.trim() || null,
-      vehicle_make: input.vehicleMake.trim(),
-      vehicle_model: input.vehicleModel.trim(),
-      vehicle_rego: input.vehiclePlate.trim() || null,
-      vehicle_odometer: input.vehicleOdometer.trim() || null,
+      contact_email: input.contactEmail.trim().toLowerCase() || null,
+      vehicle: input.vehicle.trim(),
       services: input.services,
       concern: input.concern.trim() || null,
       pickup_address: input.pickupAddress.trim(),
-      pickup_postcode: input.pickupPostcode.trim(),
+      suburb: input.suburb.trim(),
+      postcode: input.postcode.trim(),
       pickup_date: input.pickupDate,
       pickup_window: input.pickupWindow,
       key_handoff: input.keyHandoff,
@@ -85,7 +90,7 @@ export async function submitBooking(input: BookingInput): Promise<Result> {
   const res = await fetch("/api/bookings", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
+    body: JSON.stringify({ ...input, requestId: getRequestId() }),
   });
   const data = await res.json();
   if (!res.ok) return { error: data.error ?? "Something went wrong." };

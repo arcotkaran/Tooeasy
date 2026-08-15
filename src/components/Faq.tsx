@@ -25,7 +25,7 @@ const ITEMS = [
   },
   {
     q: "Which workshop do you take it to?",
-    a: "A vetted independent workshop near Wentworthville that we work with directly. You'll know exactly where your car is going before you confirm the booking, and it's the same place every time unless you ask otherwise.",
+    a: "A vetted independent workshop in the Parramatta area that we work with directly. You'll know exactly where your car is going before you confirm the booking, and it's the same place every time unless you ask otherwise.",
   },
   {
     q: "Can I do this from work instead of home?",

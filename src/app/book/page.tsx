@@ -6,7 +6,7 @@ import { AccountChip } from "@/components/AccountChip";
 export const metadata: Metadata = {
   title: "Book a pickup — Too Easy",
   description:
-    "Book a car service pickup and return from your home or office around Wentworthville.",
+    "Book a car service pickup and return from your home or office around Parramatta.",
 };
 
 export default function BookPage() {

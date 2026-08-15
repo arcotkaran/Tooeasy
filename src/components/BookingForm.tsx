@@ -5,6 +5,8 @@ import Link from "next/link";
 import { SERVICES, PICKUP_WINDOWS, KEY_HANDOFF, isLikelySameDay } from "@/lib/services";
 import { submitBooking } from "@/lib/submitBooking";
 import { DateTimePicker } from "@/components/DateTimePicker";
+import { SuburbPicker } from "@/components/SuburbPicker";
+import { findSuburb, isCovered, type Suburb } from "@/lib/geo";
 
 /** Dates are stored as ISO but always shown to the customer Australian-style. */
 const formatAU = (iso: string) => {
@@ -18,15 +20,12 @@ const formatAU = (iso: string) => {
 };
 
 type Form = {
-  vehicleYear: string;
-  vehicleMake: string;
-  vehicleModel: string;
-  vehiclePlate: string;
-  vehicleOdometer: string;
+  vehicle: string;
   services: string[];
   concern: string;
   pickupAddress: string;
-  pickupPostcode: string;
+  suburb: string;
+  postcode: string;
   pickupDate: string;
   pickupWindow: string;
   keyHandoff: string;
@@ -35,7 +34,7 @@ type Form = {
   contactEmail: string;
 };
 
-const STEP_TITLES = ["Your car", "What's needed", "Where & when", "Confirm"];
+const STEP_TITLES = ["What's needed", "Where & when", "Your details"];
 
 const field =
   "w-full rounded-xl border border-line bg-surface px-4 py-3.5 text-ink placeholder:text-muted/60 outline-none transition focus:border-brand/60";
@@ -52,19 +51,17 @@ export function BookingForm({
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState<string | null>(null);
+  const [suburb, setSuburb] = useState<Suburb | null>(null);
 
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
   const [f, setF] = useState<Form>({
-    vehicleYear: "",
-    vehicleMake: "",
-    vehicleModel: "",
-    vehiclePlate: "",
-    vehicleOdometer: "",
+    vehicle: "",
     services: [],
     concern: "",
     pickupAddress: "",
-    pickupPostcode: "",
+    suburb: "",
+    postcode: "",
     pickupDate: today,
     pickupWindow: PICKUP_WINDOWS[0].id,
     keyHandoff: "in_person",
@@ -73,17 +70,32 @@ export function BookingForm({
     contactEmail: defaultEmail,
   });
 
-  // Static export has no server-side searchParams, so carry the postcode over
-  // from the landing-page coverage check on the client.
+  // Static export has no server-side searchParams, so carry the suburb chosen
+  // on the landing page across on the client.
   useEffect(() => {
-    const pc = new URLSearchParams(window.location.search).get("postcode");
-    if (pc && /^\d{4}$/.test(pc)) {
-      setF((prev) => ({ ...prev, pickupPostcode: pc }));
+    const p = new URLSearchParams(window.location.search);
+    const name = p.get("suburb");
+    const postcode = p.get("postcode");
+    if (name && postcode) {
+      const match = findSuburb(name, postcode);
+      if (match && isCovered(match)) {
+        setSuburb(match);
+        setF((prev) => ({ ...prev, suburb: match.name, postcode: match.postcode }));
+      }
     }
   }, []);
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) =>
     setF((prev) => ({ ...prev, [k]: v }));
+
+  const pickSuburb = (s: Suburb | null) => {
+    setSuburb(s);
+    setF((prev) => ({
+      ...prev,
+      suburb: s?.name ?? "",
+      postcode: s?.postcode ?? "",
+    }));
+  };
 
   const toggleService = (id: string) =>
     setF((prev) => ({
@@ -95,22 +107,20 @@ export function BookingForm({
 
   function validate(s: number): string | null {
     if (s === 0) {
-      if (!f.vehicleMake.trim() || !f.vehicleModel.trim())
-        return "Tell us the make and model.";
+      if (!f.vehicle.trim()) return "Tell us which car we're collecting.";
+      if (f.services.length === 0) return "Pick at least one thing to look at.";
     }
-    if (s === 1 && f.services.length === 0)
-      return "Pick at least one thing to look at.";
+    if (s === 1) {
+      if (!f.pickupAddress.trim())
+        return "We need the pickup address — home or work is fine.";
+      if (!suburb) return "Pick your suburb from the list.";
+      if (!isCovered(suburb)) return "We don't collect from that suburb yet.";
+      if (!f.pickupDate) return "Pick a pickup day.";
+    }
     if (s === 2) {
-      if (!f.pickupAddress.trim()) return "We need the pickup address — home or office is fine.";
-      if (!/^\d{4}$/.test(f.pickupPostcode.trim()))
-        return "Enter a 4-digit postcode.";
-      if (!f.pickupDate) return "Pick a pickup date.";
-    }
-    if (s === 3) {
       if (!f.contactName.trim()) return "Add a name for the driver to ask for.";
       if (f.contactPhone.replace(/\D/g, "").length < 10)
-        return "Add a phone number we can text.";
-      if (!f.contactEmail.includes("@")) return "Add an email for your confirmation.";
+        return "Add a mobile number we can text.";
     }
     return null;
   }
@@ -119,7 +129,7 @@ export function BookingForm({
     const err = validate(step);
     if (err) return setError(err);
     setError(null);
-    setStep((s) => Math.min(s + 1, 3));
+    setStep((s) => Math.min(s + 1, 2));
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -130,7 +140,7 @@ export function BookingForm({
   }
 
   async function submit() {
-    const err = validate(3);
+    const err = validate(2);
     if (err) return setError(err);
     setError(null);
     setSaving(true);
@@ -173,7 +183,7 @@ export function BookingForm({
           <p className="eyebrow text-muted">What happens next</p>
           <ol className="mt-4 space-y-3.5 text-[15px]">
             {[
-              "We book your slot with the workshop and confirm your pickup time.",
+              "We book your slot with the workshop and text you to confirm the pickup.",
               "Your driver texts you before they set off, then photographs the car with you at handover.",
               "The mechanic rings you to talk through the work before they start — every time, even for a routine service.",
               "If they find anything else along the way, they ring you again. Nothing happens without your say-so.",
@@ -223,101 +233,34 @@ export function BookingForm({
           ))}
         </div>
         <p className="eyebrow mt-3 text-muted">
-          Step {step + 1} of 4 · {STEP_TITLES[step]}
+          Step {step + 1} of 3 · {STEP_TITLES[step]}
         </p>
       </div>
 
-      {/* ── Step 0: car ─────────────────────────────────────── */}
+      {/* ── Step 0: car + what's needed ─────────────────────── */}
       {step === 0 && (
         <div className="rise">
           <h1 className="display text-[2.1rem] leading-[1.05]">
-            Which car are we
+            What does your
             <br />
-            picking up?
+            car need?
           </h1>
-          <p className="mt-3 text-[15px] text-muted">
-            The workshop needs this to check parts before your car arrives.
-          </p>
 
-          <div className="mt-8 space-y-4">
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <label className={label}>Year</label>
-                <input
-                  inputMode="numeric"
-                  maxLength={4}
-                  value={f.vehicleYear}
-                  onChange={(e) =>
-                    set("vehicleYear", e.target.value.replace(/\D/g, ""))
-                  }
-                  placeholder="2021"
-                  className={field}
-                />
-              </div>
-              <div className="col-span-2">
-                <label className={label}>Make *</label>
-                <input
-                  value={f.vehicleMake}
-                  onChange={(e) => set("vehicleMake", e.target.value)}
-                  placeholder="Mazda"
-                  className={field}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className={label}>Model *</label>
-              <input
-                value={f.vehicleModel}
-                onChange={(e) => set("vehicleModel", e.target.value)}
-                placeholder="CX-5"
-                className={field}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className={label}>Rego</label>
-                <input
-                  value={f.vehiclePlate}
-                  onChange={(e) =>
-                    set("vehiclePlate", e.target.value.toUpperCase())
-                  }
-                  placeholder="DKR 42N"
-                  className={field}
-                />
-              </div>
-              <div>
-                <label className={label}>Odometer (km)</label>
-                <input
-                  inputMode="numeric"
-                  value={f.vehicleOdometer}
-                  onChange={(e) =>
-                    set("vehicleOdometer", e.target.value.replace(/\D/g, ""))
-                  }
-                  placeholder="62000"
-                  className={field}
-                />
-              </div>
-            </div>
+          <div className="mt-8">
+            <label className={label}>Which car? *</label>
+            <input
+              value={f.vehicle}
+              onChange={(e) => set("vehicle", e.target.value)}
+              placeholder="2019 Mazda CX-5"
+              className={field}
+            />
+            <p className="mt-1.5 text-[13px] text-muted">
+              Make and model is plenty — the workshop sorts the rest when they
+              ring you.
+            </p>
           </div>
-        </div>
-      )}
 
-      {/* ── Step 1: services ────────────────────────────────── */}
-      {step === 1 && (
-        <div className="rise">
-          <h1 className="display text-[2.1rem] leading-[1.05]">
-            What should the
-            <br />
-            workshop look at?
-          </h1>
-          <p className="mt-3 text-[15px] text-muted">
-            Pick everything that applies. Not sure? Choose &ldquo;take a
-            look&rdquo; and describe it below.
-          </p>
-
-          <div className="mt-8 grid gap-2.5 sm:grid-cols-2">
+          <div className="mt-7 grid gap-2.5 sm:grid-cols-2">
             {SERVICES.map((s) => {
               const on = f.services.includes(s.id);
               return (
@@ -329,7 +272,7 @@ export function BookingForm({
                   className={`rounded-2xl border p-4 text-left transition ${
                     on
                       ? "border-brand bg-brand/[0.08]"
-                      : "border-line bg-surface/40 hover:bg-surface"
+                      : "border-line bg-surface hover:border-brand/40"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -354,10 +297,10 @@ export function BookingForm({
 
           <div className="mt-6">
             <label className={label}>
-              Anything else the mechanic should know?
+              Anything the mechanic should know? (optional)
             </label>
             <textarea
-              rows={4}
+              rows={3}
               value={f.concern}
               onChange={(e) => set("concern", e.target.value)}
               placeholder="Grinding noise when I brake, mostly in the morning…"
@@ -368,26 +311,24 @@ export function BookingForm({
           {f.services.length > 0 && (
             <div
               className={`mt-5 rounded-2xl border p-4 ${
-                sameDay
-                  ? "border-brand/30 bg-brand/[0.06]"
-                  : "border-line bg-surface/50"
+                sameDay ? "border-brand/30 bg-brand/[0.06]" : "border-line bg-surface"
               }`}
             >
               <p className={`eyebrow ${sameDay ? "text-brand" : "text-muted"}`}>
-                {sameDay ? "Likely same-day" : "Needs a look first"}
+                {sameDay ? "Usually a same-day job" : "Needs a look first"}
               </p>
-              <p className="mt-2 text-[14px] leading-relaxed text-ink">
+              <p className="mt-2 text-[14px] leading-relaxed">
                 {sameDay
-                  ? "This is routine work — expect the car back the same evening. We'll confirm when we book the workshop slot."
-                  : "The workshop will diagnose it first and contact you directly with a timeline before anything goes ahead."}
+                  ? "Routine work. If we collect in the morning you'll usually have the car back the same evening."
+                  : "The mechanic will diagnose it first and ring you with a timeline before anything goes ahead."}
               </p>
             </div>
           )}
         </div>
       )}
 
-      {/* ── Step 2: where & when ────────────────────────────── */}
-      {step === 2 && (
+      {/* ── Step 1: where & when ────────────────────────────── */}
+      {step === 1 && (
         <div className="rise">
           <h1 className="display text-[2.1rem] leading-[1.05]">
             Where and when
@@ -395,28 +336,24 @@ export function BookingForm({
             do we collect it?
           </h1>
 
-          <div className="mt-8 space-y-4">
+          <div className="mt-8 space-y-5">
             <div>
-              <label className={label}>Pickup address (home or office) *</label>
-              <input
-                value={f.pickupAddress}
-                onChange={(e) => set("pickupAddress", e.target.value)}
-                placeholder="12 Station Street, Wentworthville"
-                className={field}
-              />
+              <label className={label}>Suburb *</label>
+              <SuburbPicker value={suburb} onSelect={pickSuburb} />
+              {suburb && !isCovered(suburb) && (
+                <p className="mt-2 text-[13px] text-red-700">
+                  We don&rsquo;t collect from {suburb.name} yet.
+                </p>
+              )}
             </div>
 
             <div>
-              <label className={label}>Postcode *</label>
+              <label className={label}>Street address (home or work) *</label>
               <input
-                inputMode="numeric"
-                maxLength={5}
-                value={f.pickupPostcode}
-                onChange={(e) =>
-                  set("pickupPostcode", e.target.value.replace(/\D/g, ""))
-                }
-                placeholder="2145"
-                className={`${field} max-w-[9rem]`}
+                value={f.pickupAddress}
+                onChange={(e) => set("pickupAddress", e.target.value)}
+                placeholder="12 Station Street"
+                className={field}
               />
             </div>
 
@@ -437,10 +374,8 @@ export function BookingForm({
                       key={k.id}
                       type="button"
                       onClick={() => set("keyHandoff", k.id)}
-                      className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3.5 text-left transition ${
-                        on
-                          ? "border-brand bg-brand/[0.08]"
-                          : "border-line bg-surface/40"
+                      className={`flex min-h-[52px] w-full items-center gap-3 rounded-xl border px-4 py-3.5 text-left transition ${
+                        on ? "border-brand bg-brand/[0.08]" : "border-line bg-surface"
                       }`}
                     >
                       <span
@@ -458,8 +393,8 @@ export function BookingForm({
         </div>
       )}
 
-      {/* ── Step 3: confirm ─────────────────────────────────── */}
-      {step === 3 && (
+      {/* ── Step 2: your details ────────────────────────────── */}
+      {step === 2 && (
         <div className="rise">
           <h1 className="display text-[2.1rem] leading-[1.05]">
             Last thing —
@@ -469,7 +404,7 @@ export function BookingForm({
 
           <div className="mt-8 space-y-4">
             <div>
-              <label className={label}>Name at pickup *</label>
+              <label className={label}>Name *</label>
               <input
                 value={f.contactName}
                 onChange={(e) => set("contactName", e.target.value)}
@@ -487,9 +422,13 @@ export function BookingForm({
                 placeholder="0412 345 678"
                 className={field}
               />
+              <p className="mt-1.5 text-[13px] text-muted">
+                We text your pickup confirmation here, and the mechanic rings
+                this number about the work.
+              </p>
             </div>
             <div>
-              <label className={label}>Email *</label>
+              <label className={label}>Email (optional)</label>
               <input
                 type="email"
                 inputMode="email"
@@ -498,10 +437,6 @@ export function BookingForm({
                 placeholder="you@email.com"
                 className={field}
               />
-              <p className="mt-1.5 text-[13px] text-muted">
-                Used for your confirmation and driver updates, and so the
-                workshop can reach you. Nothing else.
-              </p>
             </div>
           </div>
 
@@ -509,12 +444,7 @@ export function BookingForm({
             <p className="eyebrow text-brand">Your booking</p>
             <dl className="mt-4 space-y-3 text-[14px]">
               {[
-                [
-                  "Car",
-                  [f.vehicleYear, f.vehicleMake, f.vehicleModel]
-                    .filter(Boolean)
-                    .join(" "),
-                ],
+                ["Car", f.vehicle],
                 [
                   "Work",
                   f.services
@@ -522,7 +452,10 @@ export function BookingForm({
                     .filter(Boolean)
                     .join(", "),
                 ],
-                ["Pickup", `${f.pickupAddress}, ${f.pickupPostcode}`],
+                [
+                  "Pickup",
+                  `${f.pickupAddress}, ${f.suburb} ${f.postcode}`,
+                ],
                 [
                   "When",
                   `${formatAU(f.pickupDate)} · ${
@@ -566,11 +499,11 @@ export function BookingForm({
             </button>
           )}
           <button
-            onClick={step === 3 ? submit : next}
+            onClick={step === 2 ? submit : next}
             disabled={saving}
             className="flex-1 rounded-full bg-brand px-6 py-4 text-[15px] font-semibold text-white transition hover:bg-brand-dark disabled:opacity-60"
           >
-            {saving ? "Booking…" : step === 3 ? "Confirm pickup" : "Continue"}
+            {saving ? "Sending…" : step === 2 ? "Request pickup" : "Continue"}
           </button>
         </div>
       </div>

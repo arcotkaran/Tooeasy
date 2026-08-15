@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
-import { PostcodeCheck } from "@/components/PostcodeCheck";
+import { SuburbCheck } from "@/components/SuburbCheck";
 import { Faq } from "@/components/Faq";
 import { CoverageMap } from "@/components/CoverageMap";
 import { SERVICES } from "@/lib/services";
@@ -71,7 +71,7 @@ export default function Home() {
             <div>
               <span className="eyebrow inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-brand">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand" />
-                Now serving Wentworthville &amp; nearby
+                Now serving Parramatta &amp; nearby
               </span>
 
               <h1 className="display mt-6 text-[3.1rem] leading-[0.94] sm:text-7xl lg:text-[5.2rem]">
@@ -89,7 +89,7 @@ export default function Home() {
               </p>
 
               <div className="mt-8 max-w-md">
-                <PostcodeCheck />
+                <SuburbCheck />
               </div>
 
               <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2.5 text-[13px] text-muted">
@@ -126,7 +126,7 @@ export default function Home() {
                   <strong className="font-semibold">
                     {SUBURB_COUNT} suburbs
                   </strong>{" "}
-                  within 10km of Wentworthville.{" "}
+                  across the Parramatta region.{" "}
                   <a
                     href="#coverage"
                     className="text-brand underline underline-offset-4"
@@ -170,19 +170,19 @@ export default function Home() {
           <div>
             <span className="eyebrow text-brand">Where we collect from</span>
             <h2 className="display mt-3 text-[2.4rem] leading-[1.02] sm:text-5xl">
-              {SUBURB_COUNT} suburbs,
+              {SUBURB_COUNT} suburbs
               <br />
-              within 10km.
+              around Parramatta.
             </h2>
             <p className="mt-5 max-w-md text-[17px] leading-relaxed text-muted">
-              We keep the pickup area tight on purpose. A short run to the
-              workshop is what lets us collect after nine and have your car
-              back before five — and it means your driver is never far away
-              if plans change.
+              Here they are — no guessing. Hover any suburb to find it on the
+              map. We keep the area tight on purpose: a short run to the
+              workshop is what lets us collect after nine and get your car back
+              to you the same day.
             </p>
             <p className="mt-4 max-w-md text-[15px] leading-relaxed text-muted">
-              Just outside it? Put your postcode in anyway — we&rsquo;re
-              choosing the next suburb based on who asks.
+              Not on the list? Search your suburb anyway — we&rsquo;re choosing
+              where to go next based on who asks.
             </p>
           </div>
 
@@ -410,7 +410,7 @@ export default function Home() {
             pickup in about two minutes.
           </p>
           <div className="mx-auto mt-9 max-w-md">
-            <PostcodeCheck />
+            <SuburbCheck />
           </div>
         </div>
       </section>
@@ -422,7 +422,7 @@ export default function Home() {
             <div>
               <Logo />
               <p className="mt-3 max-w-xs text-[14px] leading-relaxed text-muted">
-                Car service pickup and return around Wentworthville, for people
+                Car service pickup and return around Parramatta, for people
                 whose time is worth more than a waiting room.
               </p>
             </div>
