@@ -5,19 +5,11 @@ import { bookingsForCustomer, eventsFor } from "@/server/bookings";
 import { Shell } from "@/components/Shell";
 import { setStatusAction } from "@/app/actions";
 import { serviceLabels, PICKUP_WINDOWS } from "@/lib/services";
-import { customerStatus, isTerminal, STATUSES } from "@/lib/status";
+import { customerStatus, isTerminal } from "@/lib/status";
 
 export const dynamic = "force-dynamic";
 
 /** The six milestones a customer actually cares about. */
-const TRACK = [
-  "requested",
-  "driver_assigned",
-  "picked_up",
-  "at_workshop",
-  "in_service",
-  "delivered",
-];
 const TRACK_LABELS = [
   "Requested",
   "Driver assigned",
@@ -28,8 +20,6 @@ const TRACK_LABELS = [
 ];
 
 function stepFor(status: string): number {
-  const order = STATUSES.map((s) => s.id);
-  const i = order.indexOf(status);
   const map: Record<string, number> = {
     requested: 0,
     confirmed: 0,
@@ -42,16 +32,22 @@ function stepFor(status: string): number {
     en_route_return: 5,
     delivered: 5,
   };
-  return map[status] ?? (i >= 0 ? 0 : 0);
+  return map[status] ?? 0;
 }
 
 export default async function DashboardPage() {
   const me = await currentUser();
   if (!me) redirect("/login");
 
-  const bookings = bookingsForCustomer(me.id);
+  const bookings = await bookingsForCustomer(me.id);
   const active = bookings.filter((b) => !isTerminal(b.status));
   const past = bookings.filter((b) => isTerminal(b.status));
+
+  // Fetched up front: a server component can't await inside .map().
+  const historyEntries = await Promise.all(
+    active.map(async (b) => [b.id, await eventsFor(b.id)] as const),
+  );
+  const history = new Map(historyEntries);
 
   return (
     <Shell user={me}>
@@ -85,7 +81,7 @@ export default async function DashboardPage() {
         {active.map((b) => {
           const win = PICKUP_WINDOWS.find((w) => w.id === b.pickup_window);
           const current = stepFor(b.status);
-          const events = eventsFor(b.id);
+          const events = history.get(b.id) ?? [];
 
           return (
             <div key={b.id} className="rounded-2xl border border-line bg-surface p-5">

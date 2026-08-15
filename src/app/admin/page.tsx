@@ -14,10 +14,10 @@ export default async function AdminPage() {
   if (!me) redirect("/login");
   if (me.role !== "admin") redirect("/");
 
-  const users = listUsers();
-  const drivers = listByRole("driver");
-  const bookings = allBookings();
-  const waitlist = allWaitlist();
+  const users = await listUsers();
+  const drivers = await listByRole("driver");
+  const bookings = await allBookings();
+  const waitlist = await allWaitlist();
   const active = bookings.filter((b) => !isTerminal(b.status));
 
   return (

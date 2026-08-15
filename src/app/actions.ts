@@ -36,7 +36,7 @@ export async function signInAction(
   if (!email || !password)
     return { error: "Enter your email and password.", values };
 
-  const user = findUserByEmail(email);
+  const user = await findUserByEmail(email);
   // Same message either way, so the form can't be used to discover accounts.
   if (!user || !verifyPassword(password, user.password_hash)) {
     return { error: "Email or password is incorrect.", values };
@@ -70,11 +70,11 @@ export async function signUpAction(
     return { error: "That email doesn't look right.", values };
   if (password.length < 8)
     return { error: "Use at least 8 characters for your password.", values };
-  if (findUserByEmail(email))
+  if (await findUserByEmail(email))
     return { error: "An account with that email already exists.", values };
 
   // Sign-up always creates a customer. Staff roles are created by an admin.
-  const { id } = createUser({ email, password, name, phone, role: "customer" });
+  const { id } = await createUser({ email, password, name, phone, role: "customer" });
   await createSession(id);
   redirect("/dashboard");
 }
@@ -102,10 +102,10 @@ export async function createStaffAction(
     return { error: "That email doesn't look right.", values };
   if (password.length < 8)
     return { error: "Use at least 8 characters for their password.", values };
-  if (findUserByEmail(email))
+  if (await findUserByEmail(email))
     return { error: "That email is already registered.", values };
 
-  createUser({ email, password, name, phone, role, createdBy: me.id });
+  await createUser({ email, password, name, phone, role, createdBy: me.id });
   revalidatePath("/admin");
   return { ok: `${name} can now sign in as a ${role}.` };
 }
@@ -116,7 +116,7 @@ export async function toggleUserAction(data: FormData) {
 
   const id = String(data.get("id") ?? "");
   const active = String(data.get("active") ?? "") === "1";
-  if (id && id !== me.id) setUserActive(id, active);
+  if (id && id !== me.id) await setUserActive(id, active);
   revalidatePath("/admin");
 }
 
@@ -130,14 +130,14 @@ export async function setStatusAction(data: FormData) {
   const status = String(data.get("status") ?? "");
   if (!id || !canSet(me.role, status)) return;
 
-  const booking = getBooking(id);
+  const booking = await getBooking(id);
   if (!booking) return;
   // A driver may only move a job that is actually theirs.
   if (me.role === "driver" && booking.driver_id !== me.id) return;
   if (me.role === "customer" && booking.user_id !== me.id) return;
 
   // Label the event so the customer's history reads as sentences, not codes.
-  setStatus(id, status, me.id, me.role, statusLabel(status));
+  await setStatus(id, status, me.id, me.role, statusLabel(status));
   revalidatePath("/admin");
   revalidatePath("/driver");
   revalidatePath("/garage");
@@ -150,14 +150,14 @@ export async function assignDriverAction(data: FormData) {
 
   const id = String(data.get("id") ?? "");
   const driverId = String(data.get("driverId") ?? "") || null;
-  if (id) assignDriver(id, driverId, me.id);
+  if (id) await assignDriver(id, driverId, me.id);
   revalidatePath("/admin");
   revalidatePath("/driver");
 }
 
 /* ── public booking ────────────────────────────────────────── */
 
-import { createBooking } from "@/server/bookings";
+import { createBooking, addWaitlist } from "@/server/bookings";
 import { checkCoverage } from "@/lib/geo";
 import { SERVICE_BY_ID, PICKUP_WINDOWS, KEY_HANDOFF } from "@/lib/services";
 
@@ -231,7 +231,7 @@ export async function createBookingAction(
     ? String(data.get("keyHandoff"))
     : "in_person";
 
-  const { ref } = createBooking({
+  const { ref } = await createBooking({
     userId: me?.id ?? null,
     contactName,
     contactPhone,
@@ -251,4 +251,25 @@ export async function createBookingAction(
   revalidatePath("/admin");
   revalidatePath("/dashboard");
   return { ref };
+}
+
+/* ── waitlist ──────────────────────────────────────────────── */
+
+export type WaitlistState = { error?: string; ok?: boolean };
+
+export async function joinWaitlistAction(
+  _prev: WaitlistState,
+  data: FormData,
+): Promise<WaitlistState> {
+  const email = clip(data.get("email"), 200).toLowerCase();
+  const postcode = clip(data.get("postcode"), 4);
+  const suburb = clip(data.get("suburb"), 80);
+  const vehicle = clip(data.get("vehicle"), 120);
+
+  if (!/^\d{4}$/.test(postcode)) return { error: "A valid postcode is required." };
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email))
+    return { error: "A valid email address is required." };
+
+  await addWaitlist({ email, postcode, suburb: suburb || null, vehicle: vehicle || null });
+  return { ok: true };
 }

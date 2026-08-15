@@ -13,7 +13,7 @@ export default async function GaragePage() {
   if (!me) redirect("/login");
   if (me.role !== "mechanic" && me.role !== "admin") redirect("/");
 
-  const jobs = bookingsForWorkshop();
+  const jobs = await bookingsForWorkshop();
 
   return (
     <Shell user={me}>

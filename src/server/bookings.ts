@@ -1,7 +1,7 @@
-import { getDb, nowIso, uid } from "@/server/db";
+import { query, one } from "@/server/db";
 import type { Role } from "@/server/auth";
 
-export type BookingRow = {
+export type Booking = {
   id: string;
   ref: string;
   user_id: string | null;
@@ -11,7 +11,7 @@ export type BookingRow = {
   contact_phone: string;
   contact_email: string | null;
   vehicle: string;
-  services: string;
+  services: string[];
   concern: string | null;
   pickup_address: string;
   suburb: string;
@@ -24,13 +24,6 @@ export type BookingRow = {
   customer_name?: string | null;
 };
 
-export type Booking = Omit<BookingRow, "services"> & { services: string[] };
-
-const parse = (r: BookingRow): Booking => ({
-  ...r,
-  services: JSON.parse(r.services || "[]") as string[],
-});
-
 /** Short human-quotable reference, e.g. "TE-4K9P2". */
 export function newRef(): string {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -40,6 +33,19 @@ export function newRef(): string {
   }
   return `TE-${out}`;
 }
+
+const SELECT = `
+  SELECT b.id, b.ref, b.user_id, b.driver_id, b.status,
+         b.contact_name, b.contact_phone, b.contact_email,
+         b.vehicle, b.services, b.concern,
+         b.pickup_address, b.suburb, b.postcode,
+         to_char(b.pickup_date, 'YYYY-MM-DD') AS pickup_date,
+         b.pickup_window, b.key_handoff, b.created_at,
+         d.name AS driver_name, c.name AS customer_name
+    FROM bookings b
+    LEFT JOIN users d ON d.id = b.driver_id
+    LEFT JOIN users c ON c.id = b.user_id
+`;
 
 export type NewBooking = {
   userId: string | null;
@@ -58,181 +64,168 @@ export type NewBooking = {
   requestId: string | null;
 };
 
-export function createBooking(b: NewBooking): { ref: string; id: string } {
-  const db = getDb();
-
+export async function createBooking(
+  b: NewBooking,
+): Promise<{ ref: string; id: string }> {
   // Idempotency: a double-tap or retry returns the original booking.
   if (b.requestId) {
-    const existing = db
-      .prepare("SELECT id, ref FROM bookings WHERE request_id = ?")
-      .get(b.requestId) as { id: string; ref: string } | undefined;
+    const existing = await one<{ id: string; ref: string }>(
+      "SELECT id, ref FROM bookings WHERE request_id = $1",
+      [b.requestId],
+    );
     if (existing) return existing;
   }
 
-  const id = uid();
-  const ref = newRef();
-  const ts = nowIso();
-
-  db.prepare(
+  const row = await one<{ id: string; ref: string }>(
     `INSERT INTO bookings (
-       id, ref, user_id, status, contact_name, contact_phone, contact_email,
+       ref, user_id, status, contact_name, contact_phone, contact_email,
        vehicle, services, concern, pickup_address, suburb, postcode,
-       pickup_date, pickup_window, key_handoff, request_id, created_at, updated_at
-     ) VALUES (?, ?, ?, 'requested', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(
-    id,
-    ref,
-    b.userId,
-    b.contactName,
-    b.contactPhone,
-    b.contactEmail,
-    b.vehicle,
-    JSON.stringify(b.services),
-    b.concern,
-    b.pickupAddress,
-    b.suburb,
-    b.postcode,
-    b.pickupDate,
-    b.pickupWindow,
-    b.keyHandoff,
-    b.requestId,
-    ts,
-    ts,
+       pickup_date, pickup_window, key_handoff, request_id
+     ) VALUES ($1,$2,'requested',$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+     RETURNING id, ref`,
+    [
+      newRef(),
+      b.userId,
+      b.contactName,
+      b.contactPhone,
+      b.contactEmail,
+      b.vehicle,
+      b.services,
+      b.concern,
+      b.pickupAddress,
+      b.suburb,
+      b.postcode,
+      b.pickupDate,
+      b.pickupWindow,
+      b.keyHandoff,
+      b.requestId,
+    ],
   );
 
-  addEvent(id, "requested", "Pickup requested", b.userId, "customer");
-  return { id, ref };
+  await addEvent(row!.id, "requested", "Pickup requested", b.userId, "customer");
+  return row!;
 }
 
-export function addEvent(
+export async function addEvent(
   bookingId: string,
   status: string,
   note: string | null,
   actorId: string | null,
   actorRole: Role | "customer",
 ) {
-  getDb()
-    .prepare(
-      `INSERT INTO booking_events (id, booking_id, status, note, actor_id, actor_role, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    )
-    .run(uid(), bookingId, status, note, actorId, actorRole, nowIso());
+  await query(
+    `INSERT INTO booking_events (booking_id, status, note, actor_id, actor_role)
+     VALUES ($1, $2, $3, $4, $5)`,
+    [bookingId, status, note, actorId, actorRole],
+  );
 }
 
-const SELECT = `
-  SELECT b.*, d.name AS driver_name, c.name AS customer_name
-    FROM bookings b
-    LEFT JOIN users d ON d.id = b.driver_id
-    LEFT JOIN users c ON c.id = b.user_id
-`;
-
-export function allBookings(): Booking[] {
-  return (getDb().prepare(`${SELECT} ORDER BY b.created_at DESC`).all() as BookingRow[]).map(parse);
+export async function allBookings(): Promise<Booking[]> {
+  return query<Booking>(`${SELECT} ORDER BY b.created_at DESC`);
 }
 
-export function bookingsForCustomer(userId: string): Booking[] {
-  return (
-    getDb()
-      .prepare(`${SELECT} WHERE b.user_id = ? ORDER BY b.created_at DESC`)
-      .all(userId) as BookingRow[]
-  ).map(parse);
+export async function bookingsForCustomer(userId: string): Promise<Booking[]> {
+  return query<Booking>(`${SELECT} WHERE b.user_id = $1 ORDER BY b.created_at DESC`, [
+    userId,
+  ]);
 }
 
-export function bookingsForDriver(driverId: string): Booking[] {
-  return (
-    getDb()
-      .prepare(
-        `${SELECT} WHERE b.driver_id = ? AND b.status NOT IN ('delivered','cancelled')
-         ORDER BY b.pickup_date, b.created_at`,
-      )
-      .all(driverId) as BookingRow[]
-  ).map(parse);
+export async function bookingsForDriver(driverId: string): Promise<Booking[]> {
+  return query<Booking>(
+    `${SELECT} WHERE b.driver_id = $1 AND b.status NOT IN ('delivered','cancelled')
+     ORDER BY b.pickup_date, b.created_at`,
+    [driverId],
+  );
 }
 
-/** The workshop queue — anything that has reached the shop and isn't finished. */
-export function bookingsForWorkshop(): Booking[] {
-  return (
-    getDb()
-      .prepare(
-        `${SELECT} WHERE b.status IN ('at_workshop','in_service','ready')
-         ORDER BY b.pickup_date, b.created_at`,
-      )
-      .all() as BookingRow[]
-  ).map(parse);
+/** The workshop queue — anything at the shop and not finished. */
+export async function bookingsForWorkshop(): Promise<Booking[]> {
+  return query<Booking>(
+    `${SELECT} WHERE b.status IN ('at_workshop','in_service','ready')
+     ORDER BY b.pickup_date, b.created_at`,
+  );
 }
 
-export function getBooking(id: string): Booking | null {
-  const row = getDb().prepare(`${SELECT} WHERE b.id = ?`).get(id) as BookingRow | undefined;
-  return row ? parse(row) : null;
+export async function getBooking(id: string): Promise<Booking | null> {
+  return one<Booking>(`${SELECT} WHERE b.id = $1`, [id]);
 }
 
-export function setStatus(
+export async function setStatus(
   id: string,
   status: string,
   actorId: string | null,
   actorRole: Role,
   note?: string,
 ) {
-  getDb()
-    .prepare("UPDATE bookings SET status = ?, updated_at = ? WHERE id = ?")
-    .run(status, nowIso(), id);
-  addEvent(id, status, note ?? null, actorId, actorRole);
+  await query("UPDATE bookings SET status = $1, updated_at = now() WHERE id = $2", [
+    status,
+    id,
+  ]);
+  await addEvent(id, status, note ?? null, actorId, actorRole);
 }
 
-export function assignDriver(id: string, driverId: string | null, actorId: string) {
-  const db = getDb();
-  db.prepare("UPDATE bookings SET driver_id = ?, updated_at = ? WHERE id = ?").run(
+export async function assignDriver(
+  id: string,
+  driverId: string | null,
+  actorId: string,
+) {
+  await query("UPDATE bookings SET driver_id = $1, updated_at = now() WHERE id = $2", [
     driverId,
-    nowIso(),
     id,
-  );
+  ]);
+
   if (driverId) {
-    const d = db.prepare("SELECT name FROM users WHERE id = ?").get(driverId) as
-      | { name: string }
-      | undefined;
-    db.prepare(
-      "UPDATE bookings SET status = 'driver_assigned', updated_at = ? WHERE id = ? AND status IN ('requested','confirmed')",
-    ).run(nowIso(), id);
-    addEvent(id, "driver_assigned", `Assigned to ${d?.name ?? "driver"}`, actorId, "admin");
+    const d = await one<{ name: string }>("SELECT name FROM users WHERE id = $1", [
+      driverId,
+    ]);
+    await query(
+      `UPDATE bookings SET status = 'driver_assigned', updated_at = now()
+        WHERE id = $1 AND status IN ('requested','confirmed')`,
+      [id],
+    );
+    await addEvent(
+      id,
+      "driver_assigned",
+      `Assigned to ${d?.name ?? "driver"}`,
+      actorId,
+      "admin",
+    );
   }
 }
 
-export function eventsFor(bookingId: string) {
-  return getDb()
-    .prepare(
-      "SELECT status, note, actor_role, created_at FROM booking_events WHERE booking_id = ? ORDER BY created_at",
-    )
-    .all(bookingId) as {
+export async function eventsFor(bookingId: string) {
+  return query<{
     status: string;
     note: string | null;
     actor_role: string | null;
     created_at: string;
-  }[];
+  }>(
+    `SELECT status, note, actor_role, created_at
+       FROM booking_events WHERE booking_id = $1 ORDER BY created_at`,
+    [bookingId],
+  );
 }
 
-export function addWaitlist(e: {
+export async function addWaitlist(e: {
   email: string;
   name?: string | null;
   suburb?: string | null;
   postcode: string;
   vehicle?: string | null;
 }) {
-  getDb()
-    .prepare(
-      `INSERT INTO waitlist (id, email, name, suburb, postcode, vehicle, category, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, 'mechanic', ?)`,
-    )
-    .run(uid(), e.email, e.name ?? null, e.suburb ?? null, e.postcode, e.vehicle ?? null, nowIso());
+  await query(
+    `INSERT INTO waitlist (email, name, suburb, postcode, vehicle)
+     VALUES ($1, $2, $3, $4, $5)`,
+    [e.email, e.name ?? null, e.suburb ?? null, e.postcode, e.vehicle ?? null],
+  );
 }
 
-export function allWaitlist() {
-  return getDb()
-    .prepare("SELECT * FROM waitlist ORDER BY created_at DESC")
-    .all() as {
+export async function allWaitlist() {
+  return query<{
     email: string;
     suburb: string | null;
     postcode: string;
     vehicle: string | null;
     created_at: string;
-  }[];
+  }>("SELECT * FROM waitlist ORDER BY created_at DESC");
 }

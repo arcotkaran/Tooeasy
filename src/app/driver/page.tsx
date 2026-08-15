@@ -13,7 +13,7 @@ export default async function DriverPage() {
   if (!me) redirect("/login");
   if (me.role !== "driver" && me.role !== "admin") redirect("/");
 
-  const jobs = bookingsForDriver(me.id);
+  const jobs = await bookingsForDriver(me.id);
 
   return (
     <Shell user={me}>

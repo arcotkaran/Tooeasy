@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SuburbPicker } from "@/components/SuburbPicker";
 import { isCovered, type Suburb } from "@/lib/geo";
+import { joinWaitlistAction } from "@/app/actions";
 
 /**
  * The qualifying question, answered instantly. Coverage is decided from the
@@ -17,6 +18,7 @@ export function SuburbCheck() {
   const [vehicle, setVehicle] = useState("");
   const [joined, setJoined] = useState(false);
   const [joining, setJoining] = useState(false);
+  const [joinError, setJoinError] = useState<string | null>(null);
 
   const covered = suburb ? isCovered(suburb) : null;
 
@@ -25,17 +27,14 @@ export function SuburbCheck() {
     if (!suburb) return;
     setJoining(true);
     try {
-      await fetch("/api/waitlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          suburb: suburb.name,
-          postcode: suburb.postcode,
-          vehicle,
-        }),
-      });
-      setJoined(true);
+      const fd = new FormData();
+      fd.set("email", email);
+      fd.set("suburb", suburb.name);
+      fd.set("postcode", suburb.postcode);
+      fd.set("vehicle", vehicle);
+      const res = await joinWaitlistAction({}, fd);
+      if (res.error) setJoinError(res.error);
+      else setJoined(true);
     } finally {
       setJoining(false);
     }
@@ -111,6 +110,9 @@ export function SuburbCheck() {
                 >
                   {joining ? "Adding you…" : "Tell me when you're here"}
                 </button>
+                {joinError && (
+                  <p className="text-[13px] text-red-700">{joinError}</p>
+                )}
               </form>
             </>
           )}
