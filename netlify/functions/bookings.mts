@@ -1,6 +1,6 @@
 import type { Config } from "@netlify/functions";
 import { getStore } from "@netlify/blobs";
-import { checkCoverage, GARAGE } from "../../src/lib/geo";
+import { checkCoverage, WORKSHOP } from "../../src/lib/geo";
 import { SERVICE_BY_ID, PICKUP_WINDOWS, KEY_HANDOFF } from "../../src/lib/services";
 
 /** Short human-quotable booking reference, e.g. "TE-4K9P2". */
@@ -22,7 +22,7 @@ type Body = {
   services?: string[];
   concern?: string;
   pickupAddress?: string;
-  pickupZip?: string;
+  pickupPostcode?: string;
   pickupDate?: string;
   pickupWindow?: string;
   keyHandoff?: string;
@@ -39,10 +39,10 @@ export default async (req: Request) => {
     return Response.json({ error: "Pick at least one service." }, { status: 400 });
   }
 
-  const zip = (b.pickupZip ?? "").trim().slice(0, 5);
-  if (!checkCoverage(zip, GARAGE).covered) {
+  const postcode = (b.pickupPostcode ?? "").trim().slice(0, 4);
+  if (!checkCoverage(postcode, WORKSHOP).covered) {
     return Response.json(
-      { error: "That ZIP is outside our pickup area right now." },
+      { error: "That postcode is outside our pickup area right now." },
       { status: 400 },
     );
   }
@@ -100,7 +100,7 @@ export default async (req: Request) => {
     services,
     concern: b.concern?.trim() || null,
     pickupAddress: b.pickupAddress!.trim(),
-    pickupZip: zip,
+    pickupPostcode: postcode,
     pickupDate: date,
     pickupWindow: windowId,
     keyHandoff: handoff,

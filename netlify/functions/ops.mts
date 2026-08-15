@@ -18,7 +18,7 @@ type Booking = {
   services: string[];
   concern: string | null;
   pickupAddress: string;
-  pickupZip: string;
+  pickupPostcode: string;
   pickupDate: string;
   pickupWindow: string;
   keyHandoff: string;
@@ -28,7 +28,7 @@ type Booking = {
 type Waitlist = {
   email: string;
   name: string | null;
-  zip: string;
+  postcode: string;
   vehicle: string | null;
   createdAt: string;
 };
@@ -68,9 +68,9 @@ export default async (req: Request) => {
     return Response.json({ bookings, waitlist });
   }
 
-  const zipCounts = new Map<string, number>();
-  for (const w of waitlist) zipCounts.set(w.zip, (zipCounts.get(w.zip) ?? 0) + 1);
-  const topZips = [...zipCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
+  const postcodeCounts = new Map<string, number>();
+  for (const w of waitlist) postcodeCounts.set(w.postcode, (postcodeCounts.get(w.postcode) ?? 0) + 1);
+  const topPostcodes = [...postcodeCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
 
   const html = `<!doctype html>
 <html lang="en"><head>
@@ -105,7 +105,7 @@ export default async (req: Request) => {
 <div class="stats">
   <div class="stat"><b>${bookings.length}</b><span>Bookings</span></div>
   <div class="stat"><b>${waitlist.length}</b><span>Waitlist</span></div>
-  <div class="stat"><b>${new Set(bookings.map((b) => b.pickupZip)).size}</b><span>ZIPs booked</span></div>
+  <div class="stat"><b>${new Set(bookings.map((b) => b.pickupPostcode)).size}</b><span>Postcodes booked</span></div>
 </div>
 
 <h2>Bookings</h2>
@@ -121,7 +121,7 @@ ${
           return `<div class="card">
   <div class="row"><strong>${esc(car)}</strong><span class="ref">${esc(b.ref)}</span></div>
   <div class="meta">${esc(b.contactName)} · <a href="tel:${esc(b.contactPhone)}">${esc(b.contactPhone)}</a> · <a href="mailto:${esc(b.contactEmail)}">${esc(b.contactEmail)}</a></div>
-  <div class="meta">${esc(b.pickupAddress)}, ${esc(b.pickupZip)}</div>
+  <div class="meta">${esc(b.pickupAddress)}, ${esc(b.pickupPostcode)}</div>
   <div class="meta">${esc(b.pickupDate)} · ${esc(win?.detail ?? b.pickupWindow)}</div>
   <div class="meta">Work: ${esc(serviceLabels(b.services).join(", "))}</div>
   ${b.concern ? `<div class="note">&ldquo;${esc(b.concern)}&rdquo;</div>` : ""}
@@ -132,15 +132,15 @@ ${
 
 <h2>Waitlist — where to open next</h2>
 ${
-  topZips.length === 0
+  topPostcodes.length === 0
     ? `<p class="empty">Nobody out of area yet.</p>`
-    : `<div>${topZips
-        .map(([zip, n]) => `<span class="pill">${esc(zip)} — ${n}</span>`)
+    : `<div>${topPostcodes
+        .map(([postcode, n]) => `<span class="pill">${esc(postcode)} — ${n}</span>`)
         .join("")}</div>
 <div style="margin-top:12px">${waitlist
         .map(
           (w) =>
-            `<div class="card"><div class="row"><span>${esc(w.email)}</span><span class="ref">${esc(w.zip)}</span></div>${
+            `<div class="card"><div class="row"><span>${esc(w.email)}</span><span class="ref">${esc(w.postcode)}</span></div>${
               w.vehicle ? `<div class="meta">${esc(w.vehicle)}</div>` : ""
             }</div>`,
         )

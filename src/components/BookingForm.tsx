@@ -13,7 +13,7 @@ type Form = {
   services: string[];
   concern: string;
   pickupAddress: string;
-  pickupZip: string;
+  pickupPostcode: string;
   pickupDate: string;
   pickupWindow: string;
   keyHandoff: string;
@@ -45,7 +45,7 @@ export function BookingForm() {
     services: [],
     concern: "",
     pickupAddress: "",
-    pickupZip: "",
+    pickupPostcode: "",
     pickupDate: today,
     pickupWindow: PICKUP_WINDOWS[0].id,
     keyHandoff: "in_person",
@@ -54,12 +54,12 @@ export function BookingForm() {
     contactEmail: "",
   });
 
-  // Static export has no server-side searchParams, so carry the ZIP over from
-  // the landing-page coverage check on the client.
+  // Static export has no server-side searchParams, so carry the postcode over
+  // from the landing-page coverage check on the client.
   useEffect(() => {
-    const zip = new URLSearchParams(window.location.search).get("zip");
-    if (zip && /^\d{5}$/.test(zip)) {
-      setF((prev) => ({ ...prev, pickupZip: zip }));
+    const pc = new URLSearchParams(window.location.search).get("postcode");
+    if (pc && /^\d{4}$/.test(pc)) {
+      setF((prev) => ({ ...prev, pickupPostcode: pc }));
     }
   }, []);
 
@@ -83,7 +83,8 @@ export function BookingForm() {
       return "Pick at least one thing to look at.";
     if (s === 2) {
       if (!f.pickupAddress.trim()) return "We need the pickup address.";
-      if (!/^\d{5}$/.test(f.pickupZip.trim())) return "Enter a 5-digit ZIP.";
+      if (!/^\d{4}$/.test(f.pickupPostcode.trim()))
+        return "Enter a 4-digit postcode.";
       if (!f.pickupDate) return "Pick a pickup date.";
     }
     if (s === 3) {
@@ -149,7 +150,7 @@ export function BookingForm() {
         <p className="mt-4 text-[16px] leading-relaxed text-muted">
           Your reference is{" "}
           <span className="font-semibold text-acid">{done}</span>. We&rsquo;re
-          confirming the slot with the shop now and will text{" "}
+          confirming the slot with the workshop now and will text{" "}
           {f.contactPhone} with your driver&rsquo;s name before pickup.
         </p>
 
@@ -157,10 +158,10 @@ export function BookingForm() {
           <p className="eyebrow text-muted">What happens next</p>
           <ol className="mt-4 space-y-3.5 text-[15px]">
             {[
-              "We confirm your pickup window with the shop — usually within a couple of hours.",
-              "Your driver texts you before they set off, with their name and photo.",
+              "We confirm your pickup window with the workshop — usually within a couple of hours.",
+              "Your driver texts you before they set off, with their name.",
               "They photograph the car with you at handover, then take it in.",
-              "You get the estimate on your phone. Nothing is done until you approve it.",
+              "The workshop looks it over and contacts you directly about what it needs.",
             ].map((x, i) => (
               <li key={x} className="flex gap-3">
                 <span className="display shrink-0 text-acid">{i + 1}</span>
@@ -173,12 +174,12 @@ export function BookingForm() {
         <p className="mt-6 text-[14px] leading-relaxed text-muted">
           Need to change or cancel? Reply to the confirmation text, or email{" "}
           <a
-            href="mailto:hello@tooeasy.com"
+            href="mailto:hello@tooeasy.com.au"
             className="text-acid underline underline-offset-4"
           >
-            hello@tooeasy.com
+            hello@tooeasy.com.au
           </a>{" "}
-          quoting {done}. Nothing has been charged.
+          quoting {done}.
         </p>
 
         <Link
@@ -219,7 +220,7 @@ export function BookingForm() {
             picking up?
           </h1>
           <p className="mt-3 text-[15px] text-muted">
-            The shop needs this to check parts before your car arrives.
+            The workshop needs this to check parts before your car arrives.
           </p>
 
           <div className="mt-8 space-y-4">
@@ -242,7 +243,7 @@ export function BookingForm() {
                 <input
                   value={f.vehicleMake}
                   onChange={(e) => set("vehicleMake", e.target.value)}
-                  placeholder="Honda"
+                  placeholder="Mazda"
                   className={field}
                 />
               </div>
@@ -253,25 +254,25 @@ export function BookingForm() {
               <input
                 value={f.vehicleModel}
                 onChange={(e) => set("vehicleModel", e.target.value)}
-                placeholder="CR-V"
+                placeholder="CX-5"
                 className={field}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={label}>Plate</label>
+                <label className={label}>Rego</label>
                 <input
                   value={f.vehiclePlate}
                   onChange={(e) =>
                     set("vehiclePlate", e.target.value.toUpperCase())
                   }
-                  placeholder="AB 12345"
+                  placeholder="ABC 12D"
                   className={field}
                 />
               </div>
               <div>
-                <label className={label}>Mileage</label>
+                <label className={label}>Odometer (km)</label>
                 <input
                   inputMode="numeric"
                   value={f.vehicleMileage}
@@ -293,7 +294,7 @@ export function BookingForm() {
           <h1 className="display text-[2.1rem] leading-[1.05]">
             What should the
             <br />
-            shop look at?
+            workshop look at?
           </h1>
           <p className="mt-3 text-[15px] text-muted">
             Pick everything that applies. Not sure? Choose &ldquo;take a
@@ -361,8 +362,8 @@ export function BookingForm() {
               </p>
               <p className="mt-2 text-[14px] leading-relaxed text-fg">
                 {sameDay
-                  ? "This is routine work — expect the car back the same evening. We'll confirm when we book the shop slot."
-                  : "The shop will diagnose first and send you a timeline with the estimate. Nothing gets done before you approve it."}
+                  ? "This is routine work — expect the car back the same evening. We'll confirm when we book the workshop slot."
+                  : "The workshop will diagnose it first and contact you directly with a timeline before anything goes ahead."}
               </p>
             </div>
           )}
@@ -384,21 +385,21 @@ export function BookingForm() {
               <input
                 value={f.pickupAddress}
                 onChange={(e) => set("pickupAddress", e.target.value)}
-                placeholder="123 Oak Street, Vernon Hills"
+                placeholder="12 Station Street, Wentworthville"
                 className={field}
               />
             </div>
 
             <div>
-              <label className={label}>ZIP *</label>
+              <label className={label}>Postcode *</label>
               <input
                 inputMode="numeric"
                 maxLength={5}
-                value={f.pickupZip}
+                value={f.pickupPostcode}
                 onChange={(e) =>
-                  set("pickupZip", e.target.value.replace(/\D/g, ""))
+                  set("pickupPostcode", e.target.value.replace(/\D/g, ""))
                 }
-                placeholder="60061"
+                placeholder="2145"
                 className={`${field} max-w-[9rem]`}
               />
             </div>
@@ -488,7 +489,7 @@ export function BookingForm() {
               <input
                 value={f.contactName}
                 onChange={(e) => set("contactName", e.target.value)}
-                placeholder="Alex Kumar"
+                placeholder="Alex Nguyen"
                 className={field}
               />
             </div>
@@ -499,7 +500,7 @@ export function BookingForm() {
                 inputMode="tel"
                 value={f.contactPhone}
                 onChange={(e) => set("contactPhone", e.target.value)}
-                placeholder="(847) 555-0142"
+                placeholder="0412 345 678"
                 className={field}
               />
             </div>
@@ -514,8 +515,8 @@ export function BookingForm() {
                 className={field}
               />
               <p className="mt-1.5 text-[13px] text-muted">
-                Used for your confirmation, driver updates and the estimate.
-                Nothing else.
+                Used for your confirmation and driver updates, and so the
+                workshop can reach you. Nothing else.
               </p>
             </div>
           </div>
@@ -537,7 +538,7 @@ export function BookingForm() {
                     .filter(Boolean)
                     .join(", "),
                 ],
-                ["Pickup", `${f.pickupAddress}, ${f.pickupZip}`],
+                ["Pickup", `${f.pickupAddress}, ${f.pickupPostcode}`],
                 [
                   "When",
                   `${f.pickupDate} · ${
@@ -556,8 +557,8 @@ export function BookingForm() {
               ))}
             </dl>
             <p className="mt-5 border-t border-line pt-4 text-[13px] leading-relaxed text-muted">
-              No payment now. We confirm your slot with the shop and text you.
-              Cancel free any time before the driver sets off.
+              We&rsquo;ll confirm your slot with the workshop and text you.
+              Cancel any time before the driver sets off.
             </p>
           </div>
         </div>

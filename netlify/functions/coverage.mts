@@ -1,14 +1,19 @@
 import type { Config } from "@netlify/functions";
-import { checkCoverage, GARAGE } from "../../src/lib/geo";
+import { checkCoverage, WORKSHOP } from "../../src/lib/geo";
 
 export default async (req: Request) => {
-  const { zip } = (await req.json().catch(() => ({}))) as { zip?: string };
+  const { postcode } = (await req.json().catch(() => ({}))) as {
+    postcode?: string;
+  };
 
-  if (!zip || !/^\d{5}$/.test(zip.trim())) {
-    return Response.json({ error: "Enter a 5-digit ZIP code." }, { status: 400 });
+  if (!postcode || !/^\d{4}$/.test(postcode.trim())) {
+    return Response.json(
+      { error: "Enter a 4-digit postcode." },
+      { status: 400 },
+    );
   }
 
-  return Response.json(checkCoverage(zip, GARAGE));
+  return Response.json(checkCoverage(postcode, WORKSHOP));
 };
 
 export const config: Config = {

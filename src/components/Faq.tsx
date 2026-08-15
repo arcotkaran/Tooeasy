@@ -5,35 +5,35 @@ import { useState } from "react";
 const ITEMS = [
   {
     q: "Who actually drives my car?",
-    a: "A background-checked, insured Too Easy driver — the same small team every time, not a rotating gig pool. We check driving records, not just criminal records. Your car is covered while it's in our hands, and we photograph it before we pull out of your driveway.",
+    a: "A licence-checked, insured Too Easy driver — the same small local team every time, not a rotating gig pool. We check driving records, not just police checks. Your car is covered while it's in our hands, and we photograph it before we pull out of your driveway.",
+  },
+  {
+    q: "Who do I deal with about the work itself?",
+    a: "The workshop, directly. They inspect your car, tell you what it needs and talk to you about it themselves. We're the booking and transport channel — we move your car and keep you posted on where it is. What gets done to it is between you and the mechanic.",
   },
   {
     q: "How do you get my keys?",
-    a: "However you want. Hand them over at the door, leave them somewhere you tell us about, or use your building's lockbox or valet. You'll get a text with your driver's name and photo before they arrive.",
+    a: "However suits you. Hand them over at the door, leave them somewhere you tell us about, or use your building's lockbox or concierge. You'll get a text with your driver's name before they arrive.",
   },
   {
     q: "Will I get my car back the same day?",
-    a: "For routine work — oil, tires, brakes, battery, inspection — almost always. For anything that needs diagnosis first, the shop tells us the real timeline once they've looked, and we tell you before a single bolt is turned. We'd rather give you a date we can keep.",
+    a: "For routine work — logbook service, oil, tyres, brakes, battery, pink slip — usually yes. Anything that needs diagnosis first depends on what the workshop finds, and they'll tell you the timeline once they've looked. We'd rather give you a date we can keep.",
   },
   {
-    q: "What if the shop finds something else wrong?",
-    a: "You get the estimate on your phone, itemised, before any extra work starts. Approve it, decline it, or approve part of it. Nothing gets done that you didn't tap 'approve' on. That's the whole point.",
-  },
-  {
-    q: "Is the pickup really free?",
-    a: "Yes. You pay the shop's normal price for the work — nothing is marked up for you. Pickup and return costs you nothing.",
-  },
-  {
-    q: "What does the repair cost?",
-    a: "Whatever the shop quotes, which you see and approve before work begins. We don't add a fee on top, and we don't take a cut of parts or labour that changes your price.",
+    q: "Which workshop do you take it to?",
+    a: "A vetted independent workshop near Wentworthville that we work with directly. You'll know exactly where your car is going before you confirm the booking, and it's the same place every time unless you ask otherwise.",
   },
   {
     q: "Can I do this from work instead of home?",
-    a: "Yes — pickup and drop-off can be different addresses, as long as both are in the service area. Plenty of people send the car off from the office driveway.",
+    a: "Yes — pickup and drop-off can be different addresses, as long as both are inside our area. Plenty of people send the car off from the office car park.",
+  },
+  {
+    q: "What if something happens to my car?",
+    a: "We photograph every panel, wheel and the odometer with you at pickup, and again at drop-off, all timestamped. The car is insured for the whole time it's with us. If anything is ever disputed, the photos settle it.",
   },
   {
     q: "What if I need to cancel?",
-    a: "Cancel any time before the driver leaves for you, free, from your booking page. No card is charged to book in the first place.",
+    a: "Cancel any time before the driver sets off, from the text we send you or by replying to your confirmation email. No commitment when you book.",
   },
 ];
 

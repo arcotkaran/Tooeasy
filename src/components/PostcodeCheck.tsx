@@ -5,20 +5,20 @@ import { useRouter } from "next/navigation";
 
 type Coverage = {
   covered: boolean;
-  zip: string;
-  area: string | null;
+  postcode: string;
+  suburb: string | null;
   distanceKm: number | null;
   reason?: string;
 };
 
-export function ZipCheck({ compact = false }: { compact?: boolean }) {
+export function PostcodeCheck({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
-  const [zip, setZip] = useState("");
+  const [postcode, setPostcode] = useState("");
   const [state, setState] = useState<"idle" | "checking" | "done">("idle");
   const [result, setResult] = useState<Coverage | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Waitlist sub-form, shown only when we can't serve the ZIP.
+  // Waitlist sub-form, shown only when we can't reach the postcode yet.
   const [email, setEmail] = useState("");
   const [vehicle, setVehicle] = useState("");
   const [joined, setJoined] = useState(false);
@@ -27,8 +27,8 @@ export function ZipCheck({ compact = false }: { compact?: boolean }) {
   async function check(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!/^\d{5}$/.test(zip.trim())) {
-      setError("Enter a 5-digit ZIP code.");
+    if (!/^\d{4}$/.test(postcode.trim())) {
+      setError("Enter a 4-digit postcode.");
       return;
     }
     setState("checking");
@@ -36,7 +36,7 @@ export function ZipCheck({ compact = false }: { compact?: boolean }) {
       const res = await fetch("/api/coverage", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ zip: zip.trim() }),
+        body: JSON.stringify({ postcode: postcode.trim() }),
       });
       const data = (await res.json()) as Coverage;
       setResult(data);
@@ -54,7 +54,7 @@ export function ZipCheck({ compact = false }: { compact?: boolean }) {
       await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, zip: zip.trim(), vehicle }),
+        body: JSON.stringify({ email, postcode: postcode.trim(), vehicle }),
       });
       setJoined(true);
     } finally {
@@ -71,15 +71,16 @@ export function ZipCheck({ compact = false }: { compact?: boolean }) {
           </span>
           <div>
             <p className="display text-lg text-fg">
-              We pick up in {result.area}.
+              We pick up in {result.suburb}.
             </p>
             <p className="mt-1 text-sm text-muted">
-              You&rsquo;re inside our service area. Next slot is usually within 48 hours.
+              You&rsquo;re inside our pickup area. Most bookings get a slot
+              within 48 hours.
             </p>
           </div>
         </div>
         <button
-          onClick={() => router.push(`/book?zip=${result.zip}`)}
+          onClick={() => router.push(`/book?postcode=${result.postcode}`)}
           className="mt-4 w-full rounded-full bg-acid px-6 py-4 text-center text-[15px] font-semibold text-black transition hover:bg-acid-dim active:scale-[0.99]"
         >
           Book my pickup →
@@ -91,7 +92,7 @@ export function ZipCheck({ compact = false }: { compact?: boolean }) {
           }}
           className="mt-2 w-full text-center text-xs text-muted underline underline-offset-4 hover:text-fg"
         >
-          Check a different ZIP
+          Check a different postcode
         </button>
       </div>
     );
@@ -104,20 +105,20 @@ export function ZipCheck({ compact = false }: { compact?: boolean }) {
           <div className="py-2 text-center">
             <p className="display text-lg">You&rsquo;re on the list.</p>
             <p className="mt-1.5 text-sm text-muted">
-              We&rsquo;ll email you the moment we cover {result.zip}. Requests like
-              yours are exactly how we choose the next area.
+              We&rsquo;ll email you the moment we reach {result.postcode}.
+              Requests like yours are exactly how we choose the next suburb.
             </p>
           </div>
         ) : (
           <>
             <p className="display text-lg">
-              {result.area
-                ? `Not in ${result.area} yet.`
-                : "Not covering that ZIP yet."}
+              {result.suburb
+                ? `Not in ${result.suburb} yet.`
+                : "Not covering that postcode yet."}
             </p>
             <p className="mt-1.5 text-sm text-muted">
-              We only launch a ZIP when we can promise a fast pickup. Leave your
-              email and we&rsquo;ll tell you the day we reach you.
+              We only open a suburb when we can promise a quick pickup. Leave
+              your email and we&rsquo;ll tell you the day we get to you.
             </p>
             <form onSubmit={join} className="mt-4 space-y-2.5">
               <input
@@ -132,7 +133,7 @@ export function ZipCheck({ compact = false }: { compact?: boolean }) {
                 type="text"
                 value={vehicle}
                 onChange={(e) => setVehicle(e.target.value)}
-                placeholder="Your car (e.g. 2019 Honda CR-V)"
+                placeholder="Your car (e.g. 2019 Mazda CX-5)"
                 className="w-full rounded-xl border border-line bg-ink px-4 py-3.5 text-fg placeholder:text-muted/60 outline-none focus:border-acid/60"
               />
               <button
@@ -153,7 +154,7 @@ export function ZipCheck({ compact = false }: { compact?: boolean }) {
           }}
           className="mt-3 w-full text-center text-xs text-muted underline underline-offset-4 hover:text-fg"
         >
-          Check a different ZIP
+          Check a different postcode
         </button>
       </div>
     );
@@ -165,11 +166,11 @@ export function ZipCheck({ compact = false }: { compact?: boolean }) {
         <input
           inputMode="numeric"
           pattern="[0-9]*"
-          maxLength={5}
-          value={zip}
-          onChange={(e) => setZip(e.target.value.replace(/\D/g, ""))}
-          placeholder="Your ZIP code"
-          aria-label="ZIP code"
+          maxLength={4}
+          value={postcode}
+          onChange={(e) => setPostcode(e.target.value.replace(/\D/g, ""))}
+          placeholder="Your postcode"
+          aria-label="Postcode"
           className="min-w-0 flex-1 bg-transparent px-4 py-3 text-fg placeholder:text-muted/70 outline-none"
         />
         <button
@@ -183,7 +184,7 @@ export function ZipCheck({ compact = false }: { compact?: boolean }) {
       {error && <p className="mt-2 px-2 text-sm text-red-400">{error}</p>}
       {!compact && !error && (
         <p className="mt-2.5 px-2 text-[13px] text-muted">
-          Free pickup and return · No card needed to book
+          Two-minute booking · Cancel any time
         </p>
       )}
     </form>

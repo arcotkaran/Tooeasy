@@ -2,27 +2,27 @@ export type ServiceDef = {
   id: string;
   label: string;
   blurb: string;
-  /** Routine work we can usually pick up and return the same day. */
+  /** Routine work the workshop can usually turn around the same day. */
   sameDay: boolean;
 };
 
 export const SERVICES: ServiceDef[] = [
   {
+    id: "logbook",
+    label: "Logbook service",
+    blurb: "Keeps your new-car warranty intact",
+    sameDay: true,
+  },
+  {
     id: "oil",
     label: "Oil & filter change",
-    blurb: "Full synthetic or conventional",
+    blurb: "Full synthetic or mineral",
     sameDay: true,
   },
   {
-    id: "maintenance",
-    label: "Scheduled maintenance",
-    blurb: "30k / 60k / 90k service",
-    sameDay: true,
-  },
-  {
-    id: "tires",
-    label: "Tires & rotation",
-    blurb: "Rotation, balance, patch, replace",
+    id: "tyres",
+    label: "Tyres & wheel alignment",
+    blurb: "Rotation, balance, puncture, replacement",
     sameDay: true,
   },
   {
@@ -34,24 +34,24 @@ export const SERVICES: ServiceDef[] = [
   {
     id: "battery",
     label: "Battery & electrical",
-    blurb: "Slow starts, dead battery, alternator",
+    blurb: "Slow starts, flat battery, alternator",
     sameDay: true,
   },
   {
-    id: "inspection",
-    label: "Emissions & inspection",
-    blurb: "State testing and re-tests",
+    id: "rego",
+    label: "Pink slip (eSafety check)",
+    blurb: "Rego inspection and re-checks",
     sameDay: true,
   },
   {
     id: "diagnostics",
-    label: "Check engine / diagnostics",
+    label: "Engine light / diagnostics",
     blurb: "Warning light, noise, something feels off",
     sameDay: false,
   },
   {
-    id: "ac",
-    label: "A/C & heating",
+    id: "aircon",
+    label: "Air con & heating",
     blurb: "Not cold, not hot, strange smell",
     sameDay: false,
   },
@@ -64,7 +64,7 @@ export const SERVICES: ServiceDef[] = [
   {
     id: "other",
     label: "Not sure — take a look",
-    blurb: "Describe it and the shop will diagnose",
+    blurb: "Describe it and the workshop will diagnose",
     sameDay: false,
   },
 ];
@@ -75,20 +75,20 @@ export function serviceLabels(ids: string[]): string[] {
   return ids.map((id) => SERVICE_BY_ID.get(id)?.label ?? id);
 }
 
-/** True when every selected service is routine enough to promise same-day. */
+/** True when every selected service is routine enough to expect same-day. */
 export function isLikelySameDay(ids: string[]): boolean {
   return ids.length > 0 && ids.every((id) => SERVICE_BY_ID.get(id)?.sameDay);
 }
 
 export const PICKUP_WINDOWS = [
-  { id: "am", label: "Morning", detail: "7:00 – 10:00 AM" },
-  { id: "midday", label: "Midday", detail: "10:00 AM – 1:00 PM" },
-  { id: "pm", label: "Afternoon", detail: "1:00 – 4:00 PM" },
-  { id: "eve", label: "Evening", detail: "4:00 – 7:00 PM" },
+  { id: "am", label: "Morning", detail: "7:00 – 10:00am" },
+  { id: "midday", label: "Midday", detail: "10:00am – 1:00pm" },
+  { id: "pm", label: "Afternoon", detail: "1:00 – 4:00pm" },
+  { id: "eve", label: "Evening", detail: "4:00 – 7:00pm" },
 ];
 
 export const KEY_HANDOFF = [
   { id: "in_person", label: "I'll hand the keys over" },
   { id: "hidden", label: "Keys left somewhere (I'll say where)" },
-  { id: "lockbox", label: "Lockbox / valet at my building" },
+  { id: "lockbox", label: "Lockbox / building concierge" },
 ];
