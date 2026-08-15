@@ -40,6 +40,12 @@ export function DateTimePicker({
   onWindowChange: (w: string) => void;
 }) {
   const days = useMemo(() => buildDays(18), []);
+  const tomorrow = useMemo(() => {
+    const t = new Date();
+    t.setHours(0, 0, 0, 0);
+    t.setDate(t.getDate() + 1);
+    return t;
+  }, []);
   const stripRef = useRef<HTMLDivElement>(null);
 
   // Default to the first available day rather than today, which we can't service.
@@ -68,7 +74,9 @@ export function DateTimePicker({
           const weekday = d.toLocaleDateString("en-AU", { weekday: "short" });
           const dayNum = d.getDate();
           const month = d.toLocaleDateString("en-AU", { month: "short" });
-          const isTomorrow = d.getTime() === days[0].getTime();
+          // Only say "Tmrw" when it genuinely is — the first available day is
+          // a Monday whenever tomorrow falls on a Sunday.
+          const isTomorrow = d.getTime() === tomorrow.getTime();
 
           return (
             <button
