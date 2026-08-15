@@ -4,13 +4,25 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { SERVICES, PICKUP_WINDOWS, KEY_HANDOFF, isLikelySameDay } from "@/lib/services";
 import { submitBooking } from "@/lib/submitBooking";
+import { DateTimePicker } from "@/components/DateTimePicker";
+
+/** Dates are stored as ISO but always shown to the customer Australian-style. */
+const formatAU = (iso: string) => {
+  const [y, m, d] = iso.split("-").map(Number);
+  if (!y || !m || !d) return iso;
+  return new Date(y, m - 1, d).toLocaleDateString("en-AU", {
+    weekday: "short",
+    day: "numeric",
+    month: "long",
+  });
+};
 
 type Form = {
   vehicleYear: string;
   vehicleMake: string;
   vehicleModel: string;
   vehiclePlate: string;
-  vehicleMileage: string;
+  vehicleOdometer: string;
   services: string[];
   concern: string;
   pickupAddress: string;
@@ -48,7 +60,7 @@ export function BookingForm({
     vehicleMake: "",
     vehicleModel: "",
     vehiclePlate: "",
-    vehicleMileage: "",
+    vehicleOdometer: "",
     services: [],
     concern: "",
     pickupAddress: "",
@@ -160,10 +172,11 @@ export function BookingForm({
           <p className="eyebrow text-muted">What happens next</p>
           <ol className="mt-4 space-y-3.5 text-[15px]">
             {[
-              "We confirm your pickup window with the workshop — usually within a couple of hours.",
-              "Your driver texts you before they set off, with their name.",
-              "They photograph the car with you at handover, then take it in.",
-              "The workshop looks it over and contacts you directly about what it needs.",
+              "We book your slot with the workshop and confirm your pickup time.",
+              "Your driver texts you before they set off, then photographs the car with you at handover.",
+              "The mechanic rings you to talk through the work before they start — every time, even for a routine service.",
+              "If they find anything else along the way, they ring you again. Nothing happens without your say-so.",
+              "You settle up with the workshop by card, and your driver brings the car home.",
             ].map((x, i) => (
               <li key={x} className="flex gap-3">
                 <span className="display shrink-0 text-brand">{i + 1}</span>
@@ -269,7 +282,7 @@ export function BookingForm({
                   onChange={(e) =>
                     set("vehiclePlate", e.target.value.toUpperCase())
                   }
-                  placeholder="ABC 12D"
+                  placeholder="DKR 42N"
                   className={field}
                 />
               </div>
@@ -277,9 +290,9 @@ export function BookingForm({
                 <label className={label}>Odometer (km)</label>
                 <input
                   inputMode="numeric"
-                  value={f.vehicleMileage}
+                  value={f.vehicleOdometer}
                   onChange={(e) =>
-                    set("vehicleMileage", e.target.value.replace(/\D/g, ""))
+                    set("vehicleOdometer", e.target.value.replace(/\D/g, ""))
                   }
                   placeholder="62000"
                   className={field}
@@ -406,44 +419,12 @@ export function BookingForm({
               />
             </div>
 
-            <div>
-              <label className={label}>Pickup date *</label>
-              <input
-                type="date"
-                min={today}
-                value={f.pickupDate}
-                onChange={(e) => set("pickupDate", e.target.value)}
-                className={field}
-              />
-            </div>
-
-            <div>
-              <label className={label}>Pickup window</label>
-              <div className="grid grid-cols-2 gap-2.5">
-                {PICKUP_WINDOWS.map((w) => {
-                  const on = f.pickupWindow === w.id;
-                  return (
-                    <button
-                      key={w.id}
-                      type="button"
-                      onClick={() => set("pickupWindow", w.id)}
-                      className={`rounded-xl border px-4 py-3 text-left transition ${
-                        on
-                          ? "border-brand bg-brand/[0.08]"
-                          : "border-line bg-surface/40"
-                      }`}
-                    >
-                      <span className="block text-[15px] font-medium">
-                        {w.label}
-                      </span>
-                      <span className="block text-[12px] text-muted">
-                        {w.detail}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            <DateTimePicker
+              date={f.pickupDate}
+              window={f.pickupWindow}
+              onDateChange={(d) => set("pickupDate", d)}
+              onWindowChange={(w) => set("pickupWindow", w)}
+            />
 
             <div>
               <label className={label}>How will the driver get the keys?</label>
@@ -543,7 +524,7 @@ export function BookingForm({
                 ["Pickup", `${f.pickupAddress}, ${f.pickupPostcode}`],
                 [
                   "When",
-                  `${f.pickupDate} · ${
+                  `${formatAU(f.pickupDate)} · ${
                     PICKUP_WINDOWS.find((w) => w.id === f.pickupWindow)?.detail
                   }`,
                 ],

@@ -14,7 +14,7 @@ export type BookingInput = {
   vehicleMake: string;
   vehicleModel: string;
   vehiclePlate: string;
-  vehicleMileage: string;
+  vehicleOdometer: string;
   services: string[];
   concern: string;
   pickupAddress: string;
@@ -66,7 +66,7 @@ export async function submitBooking(input: BookingInput): Promise<Result> {
       vehicle_make: input.vehicleMake.trim(),
       vehicle_model: input.vehicleModel.trim(),
       vehicle_rego: input.vehiclePlate.trim() || null,
-      vehicle_odometer: input.vehicleMileage.trim() || null,
+      vehicle_odometer: input.vehicleOdometer.trim() || null,
       services: input.services,
       concern: input.concern.trim() || null,
       pickup_address: input.pickupAddress.trim(),

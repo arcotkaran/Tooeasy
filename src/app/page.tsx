@@ -18,8 +18,8 @@ const STEPS = [
   },
   {
     n: "03",
-    t: "The workshop takes it from there",
-    d: "They inspect it and talk to you directly about what it needs. When it's done, the same driver brings it home.",
+    t: "The mechanic rings you before starting",
+    d: "They talk you through what your car needs, in their own words. You say yes, they get to work, and your driver brings it home.",
   },
 ];
 
@@ -117,23 +117,13 @@ export default function Home() {
               </div>
 
               <div className="absolute bottom-5 left-4 right-4 rounded-2xl border border-line bg-surface/95 p-4 backdrop-blur-xl sm:left-6 sm:right-6">
-                <div className="flex items-center gap-3">
-                  <span className="relative flex h-2.5 w-2.5 shrink-0">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-70" />
-                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-brand" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-medium text-ink">
-                      Dave is 4 minutes away
-                    </p>
-                    <p className="truncate text-[12px] text-muted">
-                      Booking TE-4K9P2 · 2021 Mazda CX-5
-                    </p>
-                  </div>
-                  <span className="eyebrow shrink-0 rounded-full bg-brand/15 px-2.5 py-1 text-brand">
-                    Live
-                  </span>
-                </div>
+                <p className="text-[13px] leading-relaxed text-ink">
+                  Collecting from{" "}
+                  <strong className="font-semibold">
+                    Wentworthville, Parramatta, Merrylands, Toongabbie
+                  </strong>{" "}
+                  and nearby suburbs.
+                </p>
               </div>
             </div>
           </div>
@@ -202,24 +192,24 @@ export default function Home() {
       <section className="border-y border-line bg-surface/30 px-5 py-20 sm:py-28">
         <div className="mx-auto max-w-6xl lg:grid lg:grid-cols-2 lg:items-center lg:gap-16">
           <div>
-            <span className="eyebrow text-brand">Where we fit</span>
+            <span className="eyebrow text-brand">No surprises</span>
             <h2 className="display mt-3 text-[2.4rem] leading-[1.02] sm:text-5xl">
-              We move your car.
+              Your mechanic rings you.
               <br />
-              <span className="text-brand">Your mechanic does the rest.</span>
+              <span className="text-brand">Every single time.</span>
             </h2>
             <p className="mt-5 max-w-md text-[17px] leading-relaxed text-muted">
-              Too Easy is the booking and transport bit — the part that normally
-              costs you a morning, a lift home and a day without a car. The
-              workshop inspects your car and speaks to you directly about what
-              it needs. We don&rsquo;t sit in the middle of that conversation.
+              No app notifications to decipher, no quote screen to tap through.
+              The mechanic working on your car picks up the phone and talks you
+              through it — before they start, and again if they find anything
+              else along the way.
             </p>
             <ul className="mt-7 space-y-3.5">
               {[
-                "You book a pickup window that suits you",
-                "We collect, photograph and deliver your car",
-                "The workshop contacts you about the work",
-                "We bring it back and hand it over the same way",
+                "A call before any work begins, even a routine service",
+                "Another call if they find something unexpected",
+                "You talk to the person actually doing the work",
+                "Nothing goes ahead until you've said yes on the phone",
               ].map((x) => (
                 <li key={x} className="flex gap-3 text-[15px] text-ink">
                   <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
@@ -229,65 +219,27 @@ export default function Home() {
             </ul>
           </div>
 
-          {/* Status mock — what Too Easy actually gives you */}
+          {/* What the call actually sounds like — deliberately not an app screen */}
           <div className="mt-12 lg:mt-0">
-            <div className="mx-auto max-w-sm rounded-[1.75rem] border border-line bg-page p-5 card-shadow">
-              <div className="flex items-center justify-between">
-                <span className="eyebrow text-muted">Booking · TE-4K9P2</span>
-                <span className="eyebrow rounded-full bg-brand/15 px-2.5 py-1 text-brand">
-                  At the workshop
-                </span>
-              </div>
-              <p className="display mt-4 text-lg">2021 Mazda CX-5</p>
-              <p className="text-[13px] text-muted">
-                Logbook service · 62,140 km
-              </p>
+            <div className="mx-auto max-w-md rounded-[1.75rem] border border-line bg-page p-7 card-shadow">
+              <span className="eyebrow text-muted">
+                Roughly how the call goes
+              </span>
 
-              <ol className="mt-5 space-y-0 border-t border-line pt-4">
-                {[
-                  ["Booked", "Tue 7:12am", true],
-                  ["Dave collected your car", "Wed 8:04am", true],
-                  ["Arrived at the workshop", "Wed 8:26am", true],
-                  ["Workshop has your car", "In progress", false],
-                  ["On the way back to you", "", false],
-                ].map(([label, time, done], i, arr) => (
-                  <li key={label as string} className="flex gap-3.5">
-                    <div className="flex flex-col items-center">
-                      <span
-                        className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border text-[9px] font-bold ${
-                          done
-                            ? "border-brand bg-brand text-white"
-                            : i === 3
-                              ? "border-brand text-brand"
-                              : "border-line text-transparent"
-                        }`}
-                      >
-                        {done ? "✓" : "·"}
-                      </span>
-                      {i < arr.length - 1 && (
-                        <span
-                          className={`w-px flex-1 ${done ? "bg-brand/50" : "bg-line"}`}
-                          style={{ minHeight: "1.5rem" }}
-                        />
-                      )}
-                    </div>
-                    <div className="pb-4">
-                      <p
-                        className={`text-[14px] leading-tight ${
-                          i === 3 ? "font-semibold text-brand" : done ? "text-ink" : "text-muted"
-                        }`}
-                      >
-                        {label as string}
-                      </p>
-                      {time ? (
-                        <p className="mt-0.5 text-[12px] text-muted">
-                          {time as string}
-                        </p>
-                      ) : null}
-                    </div>
-                  </li>
-                ))}
-              </ol>
+              <blockquote className="display mt-5 text-[1.35rem] leading-snug">
+                &ldquo;G&rsquo;day, it&rsquo;s Sam at the workshop. Your CX-5 is
+                up on the hoist — the logbook service is straightforward, but
+                your front pads are down to about 3mm. Happy for me to sort
+                those while it&rsquo;s here, or would you rather leave it for
+                now?&rdquo;
+              </blockquote>
+
+              <p className="mt-5 border-t border-line pt-5 text-[15px] leading-relaxed text-muted">
+                A two-minute conversation with the person holding the spanner.
+                You ask what you want, you decide, and you settle up with the
+                workshop by card the same way you would if you&rsquo;d driven
+                in yourself.
+              </p>
             </div>
           </div>
         </div>

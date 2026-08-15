@@ -18,7 +18,7 @@ type Body = {
   vehicleMake?: string;
   vehicleModel?: string;
   vehiclePlate?: string;
-  vehicleMileage?: string;
+  vehicleOdometer?: string;
   services?: string[];
   concern?: string;
   pickupAddress?: string;
@@ -95,7 +95,7 @@ export default async (req: Request) => {
       make: b.vehicleMake!.trim(),
       model: b.vehicleModel!.trim(),
       plate: b.vehiclePlate?.trim() || null,
-      mileage: b.vehicleMileage?.trim() || null,
+      odometer: b.vehicleOdometer?.trim() || null,
     },
     services,
     concern: b.concern?.trim() || null,

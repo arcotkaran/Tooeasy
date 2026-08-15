@@ -14,7 +14,7 @@ type Booking = {
   contactName: string;
   contactPhone: string;
   contactEmail: string;
-  vehicle: { year: string | null; make: string; model: string; plate: string | null; mileage: string | null };
+  vehicle: { year: string | null; make: string; model: string; plate: string | null; odometer: string | null };
   services: string[];
   concern: string | null;
   pickupAddress: string;

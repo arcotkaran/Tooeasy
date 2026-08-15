@@ -8,8 +8,12 @@ const ITEMS = [
     a: "A licence-checked, insured Too Easy driver — the same small local team every time, not a rotating gig pool. We check driving records, not just police checks. Your car is covered while it's in our hands, and we photograph it before we pull out of your driveway.",
   },
   {
-    q: "Who do I deal with about the work itself?",
-    a: "The workshop, directly. They inspect your car, tell you what it needs and talk to you about it themselves. We're the booking and transport channel — we move your car and keep you posted on where it is. What gets done to it is between you and the mechanic.",
+    q: "Who decides what work gets done?",
+    a: "You do, on the phone. The mechanic rings you before they start — every time, even for a straightforward logbook service — and talks you through what your car needs. If they find something else once they're into it, they ring you again. Nothing goes ahead until you've said yes.",
+  },
+  {
+    q: "How do I pay, and who do I pay?",
+    a: "You pay the workshop directly by card, exactly as you would if you'd driven in yourself. We don't take payment for the work and we don't add anything on top of what the mechanic quotes you on the phone.",
   },
   {
     q: "How do you get my keys?",
@@ -17,7 +21,7 @@ const ITEMS = [
   },
   {
     q: "Will I get my car back the same day?",
-    a: "For routine work — logbook service, oil, tyres, brakes, battery, pink slip — usually yes. Anything that needs diagnosis first depends on what the workshop finds, and they'll tell you the timeline once they've looked. We'd rather give you a date we can keep.",
+    a: "For routine work — logbook service, oil, tyres, brakes, battery, pink slip — usually yes. Anything that needs diagnosis first depends on what the mechanic finds, and they'll tell you the timeline when they ring you. We'd rather give you a day we can keep than a promise we can't.",
   },
   {
     q: "Which workshop do you take it to?",
