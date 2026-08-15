@@ -3,7 +3,11 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { PostcodeCheck } from "@/components/PostcodeCheck";
 import { Faq } from "@/components/Faq";
+import { CoverageMap } from "@/components/CoverageMap";
 import { SERVICES } from "@/lib/services";
+import { coveredSuburbs } from "@/lib/geo";
+
+const SUBURB_COUNT = coveredSuburbs().length;
 
 const STEPS = [
   {
@@ -120,9 +124,15 @@ export default function Home() {
                 <p className="text-[13px] leading-relaxed text-ink">
                   Collecting from{" "}
                   <strong className="font-semibold">
-                    Wentworthville, Parramatta, Merrylands, Toongabbie
+                    {SUBURB_COUNT} suburbs
                   </strong>{" "}
-                  and nearby suburbs.
+                  within 10km of Wentworthville.{" "}
+                  <a
+                    href="#coverage"
+                    className="text-brand underline underline-offset-4"
+                  >
+                    See the list
+                  </a>
                 </p>
               </div>
             </div>
@@ -153,6 +163,34 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      {/* ── Coverage ───────────────────────────────────────────── */}
+      <section id="coverage" className="scroll-mt-20 px-5 py-20 sm:py-28">
+        <div className="mx-auto max-w-6xl lg:grid lg:grid-cols-[1fr_1.15fr] lg:items-center lg:gap-16">
+          <div>
+            <span className="eyebrow text-brand">Where we collect from</span>
+            <h2 className="display mt-3 text-[2.4rem] leading-[1.02] sm:text-5xl">
+              {SUBURB_COUNT} suburbs,
+              <br />
+              within 10km.
+            </h2>
+            <p className="mt-5 max-w-md text-[17px] leading-relaxed text-muted">
+              We keep the pickup area tight on purpose. A short run to the
+              workshop is what lets us collect after nine and have your car
+              back before five — and it means your driver is never far away
+              if plans change.
+            </p>
+            <p className="mt-4 max-w-md text-[15px] leading-relaxed text-muted">
+              Just outside it? Put your postcode in anyway — we&rsquo;re
+              choosing the next suburb based on who asks.
+            </p>
+          </div>
+
+          <div className="mt-10 lg:mt-0">
+            <CoverageMap />
+          </div>
+        </div>
+      </section>
 
       {/* ── How it works ───────────────────────────────────────── */}
       <section className="px-5 py-20 sm:py-28">

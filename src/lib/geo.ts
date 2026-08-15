@@ -112,3 +112,29 @@ export function checkCoverage(
     reason: "too_far",
   };
 }
+
+export type CoveredSuburb = {
+  postcode: string;
+  name: string;
+  km: number;
+  lat: number;
+  lng: number;
+};
+
+/**
+ * Every suburb inside the pickup radius, nearest first. Derived rather than
+ * hand-written so the map, the published list and the booking gate can never
+ * drift apart.
+ */
+export function coveredSuburbs(workshop = WORKSHOP): CoveredSuburb[] {
+  return Object.entries(POSTCODE_CENTROIDS)
+    .map(([postcode, c]) => ({
+      postcode,
+      name: c.name,
+      lat: c.lat,
+      lng: c.lng,
+      km: haversineKm(c, workshop),
+    }))
+    .filter((s) => s.km <= workshop.radius_km)
+    .sort((a, b) => a.km - b.km);
+}
