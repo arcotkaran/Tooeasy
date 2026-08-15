@@ -16,11 +16,31 @@ declare global {
   var __tooeasyPool: Pool | undefined;
 }
 
+/**
+ * Supabase's direct host (db.<ref>.supabase.co) only publishes an AAAA record,
+ * so it is unreachable from IPv4-only networks — including Netlify's builders
+ * and functions. Rewrite it to the transaction pooler, which is the supported
+ * endpoint for serverless anyway. Accepts either form in DATABASE_URL.
+ */
+function toPooler(raw: string): string {
+  const u = new URL(raw);
+  const m = /^db\.([a-z0-9]+)\.supabase\.co$/.exec(u.hostname);
+  if (!m) return raw;
+
+  const ref = m[1];
+  u.hostname = `aws-0-${process.env.SUPABASE_REGION ?? "ap-southeast-2"}.pooler.supabase.com`;
+  u.port = "6543";
+  // The pooler requires the tenant-qualified username.
+  if (!u.username.includes(".")) u.username = `${u.username}.${ref}`;
+  return u.toString();
+}
+
 function makePool(): Pool {
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
+  const raw = process.env.DATABASE_URL;
+  if (!raw) {
     throw new Error("DATABASE_URL is not set.");
   }
+  const connectionString = toPooler(raw);
   return new Pool({
     connectionString,
     ssl: { rejectUnauthorized: false },
